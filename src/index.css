@@ -1,0 +1,128 @@
+@import "tailwindcss";
+@import './styles/_variables.scss';
+@import './styles/_keyframe-animations.scss';
+
+/* Overrides para embutir o Simple Editor dentro de modais/cards */
+.simple-editor-embed .simple-editor-wrapper {
+  width: 100%;
+  height: auto; /* não ocupar 100vh dentro do modal */
+}
+
+.simple-editor-embed .simple-editor-content {
+  max-width: 100%; /* usar toda a largura do container */
+}
+
+.simple-editor-embed .tiptap.ProseMirror.simple-editor {
+  min-height: 320px;
+  padding: 1rem 1rem 2rem; /* padding menor para modais */
+}
+
+/* Estilos para conteúdo HTML dos posts */
+.post-content {
+  line-height: 1.75;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4 {
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: 700;
+}
+
+.post-content h1 {
+  font-size: 2em;
+}
+
+.post-content h2 {
+  font-size: 1.5em;
+}
+
+.post-content h3 {
+  font-size: 1.25em;
+}
+
+.post-content p {
+  margin-bottom: 1em;
+}
+
+.post-content ul,
+.post-content ol {
+  margin: 1em 0;
+  padding-left: 2em;
+  list-style-position: outside;
+}
+
+.post-content ul {
+  list-style-type: disc;
+}
+
+.post-content ol {
+  list-style-type: decimal;
+}
+
+.post-content ul ul {
+  list-style-type: circle;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.post-content ol ol {
+  list-style-type: lower-alpha;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.post-content li {
+  margin: 0.5em 0;
+  display: list-item;
+}
+
+.post-content li p {
+  margin: 0;
+  display: inline;
+}
+
+/* Task lists (checklists) */
+.post-content ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.post-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  margin: 0.5em 0;
+}
+
+.post-content ul[data-type="taskList"] li input[type="checkbox"] {
+  margin-right: 0.5em;
+  margin-top: 0.25em;
+}
+
+.post-content a {
+  text-decoration: underline;
+}
+
+.post-content code {
+  background-color: #f1f5f9;
+  padding: 0.125em 0.375em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.post-content blockquote {
+  border-left: 4px solid #e2e8f0;
+  padding-left: 1em;
+  margin: 1em 0;
+  font-style: italic;
+  color: #64748b;
+}
+
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5em 0;
+}
