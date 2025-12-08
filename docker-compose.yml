@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: autswot-admin
+    ports:
+      - "3002:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=https://api.autswot.com
+    restart: unless-stopped
+    networks:
+      - autswot-network
+
+networks:
+  autswot-network:
+    driver: bridge

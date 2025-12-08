@@ -1,27 +1,29 @@
 // Configuração do Axios com interceptors para autenticação
 
 import axios from "axios";
-import { 
-  getAccessToken, 
-  getRefreshToken, 
-  saveAuth, 
+import {
+  getAccessToken,
+  getRefreshToken,
   logout,
   ACCESS_TOKEN_KEY,
-  REFRESH_TOKEN_KEY 
 } from "./authService";
 
-// Verificar se estamos em desenvolvimento e API está acessível
-if (import.meta.env.DEV) {
-  console.log('🔧 Modo desenvolvimento');
-  console.log('📍 API configurada para: http://localhost:3000');
+// Configuração do ambiente
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 10000;
+const IS_DEV = import.meta.env.DEV;
+
+// Log de configuração (apenas em desenvolvimento)
+if (IS_DEV) {
+  console.log(`API: ${API_URL}`);
 }
 
 // Cria uma instância do Axios
 const api = axios.create({
-  baseURL: "http://localhost:3000",
-  timeout: 10000, // 10 segundos
+  baseURL: API_URL,
+  timeout: API_TIMEOUT,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -34,46 +36,29 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    console.error('Erro na requisição:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Interceptor: renovar token automaticamente quando expirar
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Log detalhado do erro
-    if (error.code === 'ECONNREFUSED') {
-      console.error('❌ Conexão recusada:', {
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        message: 'Verifique se a API está rodando em http://localhost:3000',
-      });
-    } else if (error.code === 'ETIMEDOUT') {
-      console.error('⏱️ Timeout:', {
-        url: error.config?.url,
-        message: 'A requisição demorou muito para responder',
-      });
-    } else if (error.response) {
-      // Erro com resposta (status code)
-      console.error('❌ Erro da API:', {
-        status: error.response.status,
-        data: error.response.data,
-        url: error.config?.url,
-      });
-    } else if (error.request) {
-      // Erro sem resposta (rede)
-      console.error('🌐 Erro de rede:', {
-        message: 'Não foi possível conectar à API',
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-      });
+    // Log de erros (apenas em desenvolvimento)
+    if (IS_DEV) {
+      if (error.code === "ECONNREFUSED") {
+        console.error(`Conexão recusada: ${API_URL}`);
+      } else if (error.code === "ETIMEDOUT") {
+        console.error(`Timeout na requisição: ${error.config?.url}`);
+      } else if (error.response) {
+        console.error(
+          `API Error [${error.response.status}]:`,
+          error.response.data
+        );
+      } else if (error.request) {
+        console.error("Erro de rede: não foi possível conectar à API");
+      }
     }
 
     // Se receber 401 e ainda não tentou renovar
@@ -82,11 +67,10 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = getRefreshToken();
-        
+
         if (!refreshToken) {
-          // Não tem refresh token, fazer logout
           logout();
-          window.location.href = '/login';
+          window.location.href = "/login";
           return Promise.reject(error);
         }
 
@@ -105,9 +89,8 @@ api.interceptors.response.use(
         // Tentar novamente a requisição original
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh token inválido ou expirado, fazer logout
         logout();
-        window.location.href = '/login';
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }
@@ -117,4 +100,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
