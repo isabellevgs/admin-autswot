@@ -31,10 +31,10 @@ const SWOT_ORDEM = ['ameacas', 'fraquezas', 'oportunidades', 'forcas']
 
 // Classes de gradiente
 const gradientClasses = {
-  red: 'bg-gradient-to-r from-red-500 to-red-600',
-  orange: 'bg-gradient-to-r from-yellow-500 to-orange-500',
-  blue: 'bg-gradient-to-r from-blue-500 to-blue-600',
-  green: 'bg-gradient-to-r from-green-500 to-green-600',
+  red: 'bg-linear-to-r from-red-500 to-red-600',
+  orange: 'bg-linear-to-r from-yellow-500 to-orange-500',
+  blue: 'bg-linear-to-r from-blue-500 to-blue-600',
+  green: 'bg-linear-to-r from-green-500 to-green-600',
 }
 
 /**
@@ -197,7 +197,7 @@ function ModalQuestionario({ person, onClose }) {
                 return (
                   <div
                     key={secaoKey}
-                    className={`rounded-lg p-6 shadow-md ${gradientClasses[modulo.gradient] || 'bg-gradient-to-r from-gray-500 to-gray-600'}`}
+                    className={`rounded-lg p-6 shadow-md ${gradientClasses[modulo.gradient] || 'bg-linear-to-r from-gray-500 to-gray-600'}`}
                   >
                     <div className="flex items-center gap-3 mb-4">
                       <modulo.icon className="w-6 h-6 text-white" />
