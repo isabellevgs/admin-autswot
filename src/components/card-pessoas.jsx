@@ -18,7 +18,7 @@ function CardPessoas({ person, onOpenQuestionario, onOpenDiario, onEditPerguntas
             onClick={() => onOpenDiario(person)}
             className="w-full px-4 py-2 rounded-md border border-violet-600 bg-transparent text-violet-600 hover:bg-violet-600 hover:text-white transition-colors text-sm font-medium"
           >
-            Ver anotações
+            Ver diário
           </button>
           
           <button

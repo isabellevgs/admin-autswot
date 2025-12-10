@@ -4,6 +4,7 @@ import CardPessoas from '@/components/card-pessoas'
 import Search from '@/components/search'
 import ModalPerguntas from '@/components/modal-perguntas'
 import ModalDiario from '@/components/modal-diario'
+import ModalQuestionario from '@/components/modal-questionario'
 import api from '@/services/api'
 
 function Pessoas() {
@@ -68,10 +69,6 @@ function Pessoas() {
     setSelectedPerson(null)
   }
 
-  const handleSavePdf = () => {
-    // Placeholder: integração de PDF virá depois
-    console.log('Salvar em PDF acionado')
-  }
 
   return (
     <PageContainer>
@@ -108,35 +105,8 @@ function Pessoas() {
         </div>
       )}
 
-      {modalType === 'questionario' && selectedPerson && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={handleClose} />
-
-          <div className="relative z-10 w-full max-w-lg rounded-lg bg-white shadow-xl">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">Respostas do Questionário</h2>
-              <p className="text-slate-600 mb-2">Pessoa: {selectedPerson.name}</p>
-              <p className="text-slate-500">respostas do questionário vão ficar aqui</p>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 p-4">
-              <button
-                type="button"
-                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                onClick={handleClose}
-              >
-                fechar
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                onClick={handleSavePdf}
-              >
-                salvar em pdf
-              </button>
-            </div>
-          </div>
-        </div>
+      {modalType === 'questionario' && (
+        <ModalQuestionario person={selectedPerson} onClose={handleClose} />
       )}
 
       {modalType === 'diario' && (
