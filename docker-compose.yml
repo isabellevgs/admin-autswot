@@ -17,8 +17,10 @@ services:
       - API_UPSTREAM_HOST=host.docker.internal
     restart: unless-stopped
     networks:
-      - autswot-network
+      default:
+      coolify:
 
 networks:
-  autswot-network:
-    driver: bridge
+  coolify:
+    name: coolify
+    external: true
