@@ -54,14 +54,11 @@ export const loginUser = async (email, password) => {
     const { user, accessToken, refreshToken } = response.data;
     
     // Debug: log do role recebido
-    console.log('🔍 [DEBUG] Role recebido no login:', user.role, 'Tipo:', typeof user.role);
-    console.log('🔍 [DEBUG] Usuário completo:', JSON.stringify(user, null, 2));
     
     // Verificar se o usuário tem permissão de super user
     // Normalizar o role para garantir comparação correta
     const userRole = user.role?.toString().trim().toUpperCase();
     if (userRole !== 'SUPER_USER') {
-      console.error('❌ [DEBUG] Role inválido:', userRole, 'Esperado: SUPER_USER');
       throw new Error('Acesso negado. Apenas super usuários podem acessar o painel administrativo.');
     }
     
@@ -77,12 +74,12 @@ export const loginUser = async (email, password) => {
       const errorMsg = error.response.data?.error || error.response.data?.message || 'Erro ao fazer login';
       throw new Error(errorMsg);
     } else if (error.code === 'ECONNREFUSED') {
-      throw new Error('Não foi possível conectar à API. Verifique se o servidor está rodando em http://localhost:3000');
+      throw new Error('Não foi possível conectar à API. Verifique se o servidor está acessível');
     } else if (error.code === 'ETIMEDOUT') {
       throw new Error('A requisição demorou muito. Verifique sua conexão com a internet.');
     } else if (error.request) {
       // Erro de rede
-      throw new Error('Erro de conexão. Verifique sua internet e se a API está rodando em http://localhost:3000');
+      throw new Error('Erro de conexão. Verifique sua conexão com a internet');
     } else {
       // Outro erro (incluindo erro de permissão)
       throw new Error(error.message || 'Erro ao fazer login');
@@ -100,14 +97,11 @@ export const getCurrentUser = async () => {
     const { user } = response.data;
     
     // Debug: log do role recebido
-    console.log('🔍 [DEBUG] Role recebido no getCurrentUser:', user.role, 'Tipo:', typeof user.role);
-    console.log('🔍 [DEBUG] Usuário completo:', JSON.stringify(user, null, 2));
     
     // Verificar se o usuário ainda tem permissão de super user
     // Normalizar o role para garantir comparação correta
     const userRole = user.role?.toString().trim().toUpperCase();
     if (userRole !== 'SUPER_USER') {
-      console.error('❌ [DEBUG] Role inválido:', userRole, 'Esperado: SUPER_USER');
       logout();
       throw new Error('Acesso negado. Apenas super usuários podem acessar o painel administrativo.');
     }
