@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { FileText, Download, TrendingUp, TrendingDown, Plus, AlertTriangle } from 'lucide-react'
 import api from '@/services/api'
+import { gerarSwotPdf } from '@/lib/swot-pdf'
 
 // Configuração dos módulos SWOT
 const SWOT_MODULOS = {
@@ -139,9 +140,8 @@ function ModalQuestionario({ person, onClose }) {
   }
 
   const handleSavePdf = () => {
-    // Placeholder: integração de PDF virá depois
-    console.log('Salvar em PDF acionado para:', person.name)
-    alert('Funcionalidade de PDF em desenvolvimento')
+    if (!swotData) return
+    gerarSwotPdf(person.name, swotData)
   }
 
   const totalItens = swotData 
@@ -162,7 +162,8 @@ function ModalQuestionario({ person, onClose }) {
             <button
               type="button"
               onClick={handleSavePdf}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm"
+              disabled={!swotData || totalItens === 0 || loading}
+              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Download className="w-4 h-4" />
               PDF

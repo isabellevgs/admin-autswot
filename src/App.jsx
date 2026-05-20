@@ -7,6 +7,7 @@ import Posts from './pages/posts';
 import Comunidade from './pages/comunidade';
 import PostDetail from './pages/post-detail';
 import Pessoas from './pages/pessoas';
+import Perguntas from './pages/perguntas';
 import Login from './pages/login';
 import PageContainer from './components/page-container';
 import PrivateRoute from './routes/PrivateRoute';
@@ -78,6 +79,18 @@ function App() {
         }
       />
       
+      <Route
+        path="/perguntas"
+        element={
+          <PrivateRoute>
+            <PageContainer>
+              <Topbar />
+            </PageContainer>
+            <Perguntas />
+          </PrivateRoute>
+        }
+      />
+
       {/* Redirecionar rota raiz */}
       <Route path="/" element={<Navigate to="/home" replace />} />
     </Routes>

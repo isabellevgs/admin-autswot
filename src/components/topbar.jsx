@@ -1,7 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, LogOut, Edit, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, LayoutDashboard, Users, FileText, MessageSquare, HelpCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
+const NAV_LINKS = [
+  { to: '/pessoas',    label: 'Pessoas',    icon: Users },
+  { to: '/perguntas',  label: 'Perguntas',  icon: HelpCircle },
+  { to: '/posts',      label: 'Postagens',  icon: FileText },
+  { to: '/comunidade', label: 'Comunidade', icon: MessageSquare },
+];
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0].toUpperCase())
+    .join('');
+}
 
 function Topbar() {
   const location = useLocation();
@@ -16,113 +33,108 @@ function Topbar() {
     setIsMenuOpen(false);
   };
 
-  // Fechar menu ao clicar fora
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsMenuOpen(false);
       }
     };
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
   return (
-    <header className="bg-linear-to-r from-violet-700 to-violet-800 px-6 py-4 rounded-2xl mt-5 shadow-lg">
-      <nav className="flex flex-wrap items-center justify-between gap-4" aria-label="Navegação principal">
-        <div className="flex items-center gap-8 lg:gap-12">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/home">
-              <h1 className="text-white font-bold text-2xl sm:text-3xl tracking-wide hover:text-violet-200 transition-colors duration-200 cursor-pointer">
-                AutSWOT
-              </h1>
-            </Link>
-          </div>
+    <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+      <nav className="bg-violet-800 rounded-2xl px-4 sm:px-6 py-0 shadow-xl shadow-violet-900/30 flex items-center justify-between gap-4 h-16">
 
-          {/* Menu de Navegação */}
-          <ul className="flex flex-wrap items-center gap-6 lg:gap-8">
-            <li>
-              <Link
-                to="/pessoas"
-                className={`text-white font-semibold text-base sm:text-lg hover:text-violet-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-700 rounded px-3 py-1.5 ${
-                  location.pathname === '/pessoas' ? 'text-violet-200' : ''
-                }`}
-                aria-current={location.pathname === '/pessoas' ? 'page' : undefined}
-              >
-                Pessoas
-              </Link>
-            </li>
+        {/* Logo */}
+        <Link
+          to="/home"
+          className="flex items-center gap-2.5 shrink-0 group"
+        >
+          <span className="text-white font-bold text-lg tracking-tight hidden sm:block">
+            Aut<span className="text-violet-300">SWOT</span>
+          </span>
+        </Link>
 
-            <li>
-              <Link
-                to="/posts"
-                className={`text-white font-semibold text-base sm:text-lg hover:text-violet-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-700 rounded px-3 py-1.5 ${
-                  location.pathname === '/posts' ? 'text-violet-200' : ''
-                }`}
-                aria-current={location.pathname === '/posts' ? 'page' : undefined}
-              >
-                Postagens
-              </Link>
-            </li>
+        {/* Divider vertical */}
+        <div className="hidden md:block w-px h-6 bg-white/15 shrink-0" />
 
-            <li>
-              <Link
-                to="/comunidade"
-                className={`text-white font-semibold text-base sm:text-lg hover:text-violet-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-700 rounded px-3 py-1.5 ${
-                  location.pathname === '/comunidade' ? 'text-violet-200' : ''
-                }`}
-                aria-current={location.pathname === '/comunidade' ? 'page' : undefined}
-              >
-                Comunidade
-              </Link>
-            </li>
-          </ul>
-        </div>
+        {/* Nav links */}
+        <ul className="hidden md:flex items-center gap-1 flex-1">
+          {NAV_LINKS.map(({ to, label, icon: Icon }) => {
+            const active = location.pathname === to || location.pathname.startsWith(to + '/');
+            return (
+              <li key={to}>
+                <Link
+                  to={to}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    active
+                      ? 'bg-white text-violet-800 shadow-sm'
+                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
 
-        {/* Perfil do Usuário e menu */}
-        <div className="relative" ref={menuRef}>
+        {/* User menu */}
+        <div className="relative shrink-0" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 transition-colors duration-200 px-4 py-2 rounded-lg cursor-pointer"
+            className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 active:bg-white/25 transition-colors duration-200 pl-2 pr-3 py-1.5 rounded-xl cursor-pointer"
           >
-            <User className="w-5 h-5 text-white" />
-            <span className="text-white font-semibold text-base sm:text-lg whitespace-nowrap">
-              Olá, {user?.name || 'Usuário'}
+            {/* Avatar com iniciais */}
+            <div className="w-7 h-7 rounded-lg bg-violet-600 border border-white/20 flex items-center justify-center text-xs font-bold text-white select-none">
+              {getInitials(user?.name)}
+            </div>
+            <span className="text-white text-sm font-medium hidden sm:block whitespace-nowrap max-w-32 truncate">
+              {user?.name || 'Usuário'}
             </span>
-            <ChevronDown 
-              className={`w-4 h-4 text-white transition-transform duration-200 ${
-                isMenuOpen ? 'rotate-180' : ''
-              }`} 
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-white/70 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`}
             />
           </button>
 
-          {/* Menu Dropdown */}
+          {/* Dropdown */}
           {isMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
-              <div className="py-1">
-                <button
-                  onClick={() => {
-                    // Editar perfil - desabilitado por enquanto
-                  }}
-                  disabled
-                  className="w-full flex items-center gap-3 px-4 py-2 text-gray-500 cursor-not-allowed opacity-50 hover:bg-gray-50 transition-colors"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span className="text-sm font-medium">Editar perfil</span>
-                </button>
+            <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+              {/* Info do usuário */}
+              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Logado como</p>
+                <p className="text-sm font-semibold text-gray-800 truncate mt-0.5">{user?.name || '—'}</p>
+                {user?.email && (
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                )}
+              </div>
+
+              <div className="py-1.5">
+                {/* Nav mobile */}
+                <div className="md:hidden px-2 pb-1.5 border-b border-gray-100 mb-1.5 space-y-0.5">
+                  {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+                    >
+                      <Icon className="w-4 h-4" />
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span className="text-sm font-medium">Sair</span>
+                  <span className="font-medium">Sair</span>
                 </button>
               </div>
             </div>
@@ -130,7 +142,7 @@ function Topbar() {
         </div>
       </nav>
     </header>
-  )
+  );
 }
 
-export default Topbar
+export default Topbar;

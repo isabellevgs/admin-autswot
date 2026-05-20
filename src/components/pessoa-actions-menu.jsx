@@ -1,0 +1,46 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { MoreHorizontal } from 'lucide-react'
+
+const ITEM_CLASS =
+  'flex items-center gap-2 px-3 py-2 rounded-md text-slate-700 cursor-pointer hover:bg-violet-50 hover:text-violet-700 outline-none transition-colors'
+
+function PessoaActionsMenu({ person, onOpenQuestionario, onOpenDiario, onEditPerguntas, onOpenReflexoes, onRedefinirSenha }) {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          aria-label="Ver detalhes"
+        >
+          <MoreHorizontal size={18} />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={4}
+          className="z-50 min-w-[180px] rounded-lg border border-slate-200 bg-white shadow-lg p-1 text-sm"
+        >
+          <DropdownMenu.Item onSelect={() => onOpenQuestionario(person)} className={ITEM_CLASS}>
+            Ver SWOT
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onSelect={() => onOpenDiario(person)} className={ITEM_CLASS}>
+            Ver diário
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onSelect={() => onEditPerguntas(person)} className={ITEM_CLASS}>
+            Perguntas
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onSelect={() => onOpenReflexoes(person)} className={ITEM_CLASS}>
+            Ver reflexões
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onSelect={() => onRedefinirSenha(person)} className={ITEM_CLASS}>
+            Redefinir senha
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  )
+}
+
+export default PessoaActionsMenu
