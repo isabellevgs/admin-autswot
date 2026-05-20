@@ -5,12 +5,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=https://api.autswot.com
     container_name: autswot-admin
     ports:
       - "3002:80"
     environment:
       - NODE_ENV=production
-      - VITE_API_URL=https://api.autswot.com
     restart: unless-stopped
     networks:
       - autswot-network
