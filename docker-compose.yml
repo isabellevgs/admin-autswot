@@ -10,15 +10,15 @@ services:
     container_name: autswot-admin
     ports:
       - "3002:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - NODE_ENV=production
+      - API_UPSTREAM_HOST=host.docker.internal
     restart: unless-stopped
     networks:
       - autswot-network
-      - coolify
 
 networks:
   autswot-network:
     driver: bridge
-  coolify:
-    external: true
