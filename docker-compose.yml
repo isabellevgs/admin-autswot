@@ -12,12 +12,13 @@ services:
       - "3002:80"
     environment:
       - NODE_ENV=production
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
       - autswot-network
+      - coolify
 
 networks:
   autswot-network:
     driver: bridge
+  coolify:
+    external: true
