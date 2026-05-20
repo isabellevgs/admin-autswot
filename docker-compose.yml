@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=https://api.autswot.com
+        - VITE_API_URL=/api
     container_name: autswot-admin
     ports:
       - "3002:80"
