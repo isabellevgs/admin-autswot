@@ -8,7 +8,7 @@ const COLUMNS = [
   { key: 'progresso', label: 'Progresso' },
 ]
 
-function PessoasTable({ pessoas, progressMap, sort, onSort, onOpenQuestionario, onOpenDiario, onEditPerguntas, onOpenReflexoes, onRedefinirSenha }) {
+function PessoasTable({ pessoas, progressMap, sort, onSort, onOpenQuestionario, onOpenDiario, onEditPerguntas, onOpenReflexoes, onRedefinirSenha, onExcluirUsuario }) {
   return (
     <div className="mt-6 rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
       <table className="w-full text-sm">
@@ -43,6 +43,7 @@ function PessoasTable({ pessoas, progressMap, sort, onSort, onOpenQuestionario, 
                   onEditPerguntas={onEditPerguntas}
                   onOpenReflexoes={onOpenReflexoes}
                   onRedefinirSenha={onRedefinirSenha}
+                  onExcluirUsuario={onExcluirUsuario}
                 />
               </td>
             </tr>

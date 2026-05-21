@@ -108,5 +108,5 @@ export function usePessoas(searchTerm) {
     return list
   }, [searchTerm, pessoas, sort, progressMap])
 
-  return { pessoas: filteredPessoas, loading, error, progressMap, sort, handleSort }
+  return { pessoas: filteredPessoas, loading, error, progressMap, sort, handleSort, reload: loadPessoas }
 }

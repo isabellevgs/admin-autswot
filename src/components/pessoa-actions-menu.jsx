@@ -4,7 +4,10 @@ import { MoreHorizontal } from 'lucide-react'
 const ITEM_CLASS =
   'flex items-center gap-2 px-3 py-2 rounded-md text-slate-700 cursor-pointer hover:bg-violet-50 hover:text-violet-700 outline-none transition-colors'
 
-function PessoaActionsMenu({ person, onOpenQuestionario, onOpenDiario, onEditPerguntas, onOpenReflexoes, onRedefinirSenha }) {
+const ITEM_DANGER_CLASS =
+  'flex items-center gap-2 px-3 py-2 rounded-md text-red-600 cursor-pointer hover:bg-red-50 outline-none transition-colors'
+
+function PessoaActionsMenu({ person, onOpenQuestionario, onOpenDiario, onEditPerguntas, onOpenReflexoes, onRedefinirSenha, onExcluirUsuario }) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -37,6 +40,14 @@ function PessoaActionsMenu({ person, onOpenQuestionario, onOpenDiario, onEditPer
           <DropdownMenu.Item onSelect={() => onRedefinirSenha(person)} className={ITEM_CLASS}>
             Redefinir senha
           </DropdownMenu.Item>
+          {person.role !== 'SUPER_USER' && (
+            <>
+              <DropdownMenu.Separator className="my-1 h-px bg-slate-100" />
+              <DropdownMenu.Item onSelect={() => onExcluirUsuario(person)} className={ITEM_DANGER_CLASS}>
+                Excluir usuário
+              </DropdownMenu.Item>
+            </>
+          )}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
