@@ -9,7 +9,7 @@ import {
 } from "./authService";
 
 // Configuração do ambiente
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 10000;
 const IS_DEV = import.meta.env.DEV;
 

@@ -5,8 +5,8 @@ FROM oven/bun:1 AS builder
 
 WORKDIR /app
 
-# Build args
-ARG VITE_API_URL
+# Build args — default /api evita bundle com URL cross-origin (CORS)
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
 # Copiar arquivos de dependências
