@@ -8,6 +8,7 @@ import ModalQuestionario from '@/components/modal-questionario'
 import ModalReflexoesTraco from '@/components/modal-reflexoes-traco'
 import ModalRedefinirSenha from '@/components/modal-redefinir-senha'
 import ModalExcluirUsuario from '@/components/modal-excluir-usuario'
+import ModalCadastro from '@/components/modal-cadastro'
 import { usePessoas } from '@/hooks/use-pessoas'
 
 function Pessoas() {
@@ -21,6 +22,7 @@ function Pessoas() {
   const handleOpenDiario = (person) => { setSelectedPerson(person); setModalType('diario') }
   const handleEditPerguntas = (person) => { setSelectedPerson(person); setModalType('editar-perguntas') }
   const handleOpenReflexoes = (person) => { setSelectedPerson(person); setModalType('reflexoes-traco') }
+  const handleVerCadastro = (person) => { setSelectedPerson(person); setModalType('ver-cadastro') }
   const handleRedefinirSenha = (person) => { setSelectedPerson(person); setModalType('redefinir-senha') }
   const handleExcluirUsuario = (person) => { setSelectedPerson(person); setModalType('excluir-usuario') }
   const handleClose = () => { setModalType(null); setSelectedPerson(null) }
@@ -49,6 +51,7 @@ function Pessoas() {
           onOpenDiario={handleOpenDiario}
           onEditPerguntas={handleEditPerguntas}
           onOpenReflexoes={handleOpenReflexoes}
+          onVerCadastro={handleVerCadastro}
           onRedefinirSenha={handleRedefinirSenha}
           onExcluirUsuario={handleExcluirUsuario}
         />
@@ -64,6 +67,7 @@ function Pessoas() {
       {modalType === 'diario' && <ModalDiario person={selectedPerson} onClose={handleClose} />}
       {modalType === 'editar-perguntas' && <ModalPerguntas person={selectedPerson} onClose={handleClose} />}
       {modalType === 'reflexoes-traco' && <ModalReflexoesTraco person={selectedPerson} onClose={handleClose} />}
+      {modalType === 'ver-cadastro' && <ModalCadastro person={selectedPerson} onClose={handleClose} />}
       {modalType === 'redefinir-senha' && <ModalRedefinirSenha person={selectedPerson} onClose={handleClose} />}
       {modalType === 'excluir-usuario' && (
         <ModalExcluirUsuario person={selectedPerson} onClose={handleClose} onDeleted={reload} />
