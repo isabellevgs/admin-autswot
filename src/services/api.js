@@ -8,8 +8,26 @@ import {
   ACCESS_TOKEN_KEY,
 } from "./authService";
 
-// Configuração do ambiente
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+/** URL da API — em produção usa sempre /api (same-origin via nginx). */
+function resolveApiBaseUrl() {
+  const configured = (import.meta.env.VITE_API_URL ?? "").trim();
+
+  if (typeof window !== "undefined") {
+    const { hostname, protocol } = window.location;
+    if (protocol === "https:" && hostname.endsWith("autswot.com")) {
+      return "/api";
+    }
+  }
+
+  // Bundle antigo com URL absoluta cross-origin (ex.: https://api.autswot.com)
+  if (configured.startsWith("http://") || configured.startsWith("https://")) {
+    return "/api";
+  }
+
+  return configured || "/api";
+}
+
+const API_URL = resolveApiBaseUrl();
 const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 10000;
 const IS_DEV = import.meta.env.DEV;
 
