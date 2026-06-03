@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, ChevronDown, LayoutDashboard, Users, FileText, MessageSquare, HelpCircle } from 'lucide-react';
+import { LogOut, ChevronDown, LayoutDashboard, Users, FileText, MessageSquare, HelpCircle, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const NAV_LINKS = [
   { to: '/pessoas',    label: 'Pessoas',    icon: Users },
   { to: '/perguntas',  label: 'Perguntas',  icon: HelpCircle },
+  { to: '/relatorios', label: 'Relatórios', icon: BookOpen },
   { to: '/posts',      label: 'Postagens',  icon: FileText },
   { to: '/comunidade', label: 'Comunidade', icon: MessageSquare },
 ];
