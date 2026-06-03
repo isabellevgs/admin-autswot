@@ -26,6 +26,8 @@ function InputSenha({ id, label, value, onChange, error }) {
           onClick={() => setVisivel(v => !v)}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
           tabIndex={-1}
+          aria-label={visivel ? 'Ocultar senha' : 'Mostrar senha'}
+          title={visivel ? 'Ocultar senha' : 'Mostrar senha'}
         >
           {visivel ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
