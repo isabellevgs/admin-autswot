@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { FileText, Download, TrendingUp, TrendingDown, Plus, AlertTriangle } from 'lucide-react'
 import api from '@/services/api'
 import { gerarSwotPdf } from '@/lib/swot-pdf'
+import { coletarDadosTracosParaPdf } from '@/lib/coletar-dados-tracos-pdf'
+import { transformarDadosSwot } from '@/utils/swotUtils'
 
 // Configuração dos módulos SWOT
 const SWOT_MODULOS = {
@@ -39,55 +41,16 @@ const gradientClasses = {
 }
 
 /**
- * Mapeia um traço da API para formato de exibição
+ * Transforma dados da API em formato de módulos SWOT (com metadados por traço).
  */
-function mapearTraco(traco) {
-  // Se o campo swot existir e não estiver vazio, usa ele. Caso contrário, usa o formato antigo
-  if (traco.swot && traco.swot.trim() !== '') {
-    return traco.swot
-  }
-  
-  const tipoLabel = {
-    'SH': 'Fraquezas e Ameaças SH',
-    'CH': 'Fraquezas e Ameaças CH',
-    'FO': 'Fraquezas e Oportunidades',
-    'F': 'Forças'
-  }[traco.tipo] || traco.tipo
-  
-  return `Traço ${traco.numeroTraco} - ${tipoLabel}`
-}
-
-/**
- * Transforma dados da API em formato de módulos SWOT
- */
-function transformarDadosSwot(swotData) {
-  // Função auxiliar para mapear e filtrar itens válidos
-  const mapearEFiltrar = (array) => {
-    if (!array || !Array.isArray(array)) return []
-    return array
-      .map(mapearTraco)
-      .filter(item => item && item.trim() !== '') // Remove itens vazios ou null
-  }
-
-  return {
-    ameacas: {
-      items: mapearEFiltrar(swotData.ameacas)
-    },
-    fraquezas: {
-      items: mapearEFiltrar(swotData.fraquezas)
-    },
-    oportunidades: {
-      items: mapearEFiltrar(swotData.oportunidades)
-    },
-    forcas: {
-      items: mapearEFiltrar(swotData.forcas)
-    }
-  }
+function prepararDadosSwot(swotData) {
+  return transformarDadosSwot(swotData)
 }
 
 function ModalQuestionario({ person, onClose }) {
   const [swotData, setSwotData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [gerandoPdf, setGerandoPdf] = useState(false)
   const [error, setError] = useState(null)
 
   if (!person) return null
@@ -116,7 +79,7 @@ function ModalQuestionario({ person, onClose }) {
 
       // Buscar SWOT do usuário específico
       const response = await api.get(`/questionario-resposta/swot/user/${person.id}`)
-      const dadosTransformados = transformarDadosSwot(response.data)
+      const dadosTransformados = prepararDadosSwot(response.data)
       
       setSwotData(dadosTransformados)
     } catch (err) {
@@ -139,9 +102,17 @@ function ModalQuestionario({ person, onClose }) {
     }
   }
 
-  const handleSavePdf = () => {
-    if (!swotData) return
-    gerarSwotPdf(person.name, swotData)
+  const handleSavePdf = async () => {
+    if (!swotData || !person?.id || gerandoPdf) return
+    setGerandoPdf(true)
+    try {
+      const tracosDetalhados = await coletarDadosTracosParaPdf(swotData, person.id)
+      gerarSwotPdf(person.name, swotData, tracosDetalhados)
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err)
+    } finally {
+      setGerandoPdf(false)
+    }
   }
 
   const totalItens = swotData 
@@ -162,11 +133,11 @@ function ModalQuestionario({ person, onClose }) {
             <button
               type="button"
               onClick={handleSavePdf}
-              disabled={!swotData || totalItens === 0 || loading}
+              disabled={!swotData || totalItens === 0 || loading || gerandoPdf}
               className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Download className="w-4 h-4" />
-              PDF
+              {gerandoPdf ? 'Gerando…' : 'PDF'}
             </button>
           </div>
         </div>
@@ -180,7 +151,7 @@ function ModalQuestionario({ person, onClose }) {
 
           {loading ? (
             <div className="text-center text-slate-500 py-8">Carregando SWOT...</div>
-          ) : !swotData || totalItens === 0 ? (
+          ) : !swotData ? (
             <div className="text-center py-12">
               <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-lg font-medium">Nenhum resultado encontrado</p>
@@ -192,8 +163,7 @@ function ModalQuestionario({ person, onClose }) {
                 const modulo = SWOT_MODULOS[secaoKey]
                 const dados = swotData[secaoKey]
                 const items = dados?.items || []
-                
-                if (items.length === 0) return null
+                const semTracos = items.length === 0
 
                 return (
                   <div
@@ -205,21 +175,32 @@ function ModalQuestionario({ person, onClose }) {
                       <h3 className="text-white font-bold text-xl">
                         {modulo.titulo}
                         <span className="ml-2 text-white/80 text-base font-normal">
-                          ({items.length} {items.length === 1 ? 'item' : 'itens'})
+                          ({items.length} {items.length === 1 ? 'traço' : 'traços'})
                         </span>
                       </h3>
+                      {semTracos && (
+                        <span className="ml-auto bg-black/30 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                          0 traços
+                        </span>
+                      )}
                     </div>
-                    
-                    <ul className="space-y-2 mt-4">
-                      {items.map((item, index) => (
-                        <li 
-                          key={index} 
-                          className="text-white text-base bg-white/10 rounded-md p-3 backdrop-blur-sm"
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
+
+                    {semTracos ? (
+                      <p className="text-white/90 text-sm sm:text-base bg-black/20 rounded-lg px-3 py-2">
+                        Nenhum traço neste quadrante (0 traços).
+                      </p>
+                    ) : (
+                      <ul className="space-y-2 mt-4">
+                        {items.map((item, index) => (
+                          <li
+                            key={index}
+                            className="text-white text-base bg-white/10 rounded-md p-3 backdrop-blur-sm"
+                          >
+                            {item.label ?? item}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )
               })}

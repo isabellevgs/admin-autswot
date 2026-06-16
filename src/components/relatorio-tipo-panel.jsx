@@ -138,7 +138,6 @@ function RelatorioTipoPanel({ tipo }) {
                 )}
                 <th className="px-5 py-3 text-left font-semibold text-slate-600 w-20">Nº</th>
                 <th className="px-5 py-3 text-left font-semibold text-slate-600">Título</th>
-                <th className="px-5 py-3 text-left font-semibold text-slate-600 hidden md:table-cell">Conteúdo</th>
                 <th className="px-5 py-3 text-right font-semibold text-slate-600">Ações</th>
               </tr>
             </thead>

@@ -22,8 +22,9 @@ function chaveSecoes(campo) {
 }
 
 function SecaoBadges({ secoes }) {
-  if (!secoes.length) return null
-  return secoes.map((secao) => (
+  const visiveis = secoes.filter((s) => s.legend !== 'Neutro')
+  if (!visiveis.length) return null
+  return visiveis.map((secao) => (
     <span
       key={secao.legend}
       className={`inline-flex shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${secao.badgeClass}`}

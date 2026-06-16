@@ -27,9 +27,6 @@ function RelatorioRow({ relatorio, mostrarTipo, isLast, onEdit, onDelete }) {
         )}
         <td className="px-5 py-3 text-slate-500 text-sm w-20">{relatorio.numeroTraco ?? '—'}</td>
         <td className="px-5 py-3 text-slate-800 text-sm font-medium">{relatorio.titulo ?? '—'}</td>
-        <td className="px-5 py-3 text-slate-500 text-sm hidden md:table-cell">
-          {(relatorio.oQueE?.length ?? 0)} parágrafo{(relatorio.oQueE?.length ?? 0) !== 1 ? 's' : ''}
-        </td>
         <td className="px-5 py-3 text-right">
           <div className="flex items-center justify-end gap-1">
             <button
