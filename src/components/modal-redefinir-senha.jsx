@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Eye, EyeOff, KeyRound, CheckCircle } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 
 function InputSenha({ id, label, value, onChange, error }) {
   const [visivel, setVisivel] = useState(false)
@@ -65,7 +66,7 @@ function ModalRedefinirSenha({ person, onClose }) {
       setSucesso(true)
       setTimeout(onClose, 1500)
     } catch (err) {
-      setErroGeral(err?.response?.data?.message ?? 'Não foi possível redefinir a senha. Tente novamente.')
+      setErroGeral(extrairErroApi(err, 'Não foi possível redefinir a senha. Tente novamente.'))
     } finally {
       setSalvando(false)
     }

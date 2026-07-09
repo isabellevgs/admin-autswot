@@ -1,12 +1,9 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
-// Componente de rota protegida
-// Só permite acesso se o usuário estiver autenticado e for SUPER_USER
 const PrivateRoute = ({ children }) => {
-  const { signed, user, loading } = useAuth();
+  const { signed, user, loading, logout } = useAuth();
 
-  // Enquanto verifica a autenticação, pode mostrar um loading
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
@@ -18,21 +15,12 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // Se não estiver autenticado, redireciona para o login
   if (!signed) {
     return <Navigate to="/login" replace />;
   }
 
-  // Debug: log do role do usuário
-  if (user) {
-    console.log('🔍 [DEBUG] PrivateRoute - Role do usuário:', user.role, 'Tipo:', typeof user.role);
-  }
-  
-  // Verificar se o usuário tem permissão de super user
-  // Normalizar o role para garantir comparação correta
   const userRole = user?.role?.toString().trim().toUpperCase();
   if (user && userRole !== 'SUPER_USER') {
-    console.error('❌ [DEBUG] PrivateRoute - Role inválido:', userRole, 'Esperado: SUPER_USER');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="text-center max-w-md mx-auto p-8 bg-white rounded-lg shadow-lg">
@@ -42,6 +30,7 @@ const PrivateRoute = ({ children }) => {
           </p>
           <button
             onClick={() => {
+              logout();
               window.location.href = '/login';
             }}
             className="px-6 py-2 bg-violet-700 text-white rounded-lg hover:bg-violet-800 transition-colors"
@@ -53,9 +42,7 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // Se estiver autenticado e for super user, renderiza o componente filho
   return children;
 };
 
 export default PrivateRoute;
-

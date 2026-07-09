@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { FileText, Download, TrendingUp, TrendingDown, Plus, AlertTriangle } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 import { gerarSwotPdf } from '@/lib/swot-pdf'
 import { coletarDadosTracosParaPdf } from '@/lib/coletar-dados-tracos-pdf'
 import { transformarDadosSwot } from '@/utils/swotUtils'
@@ -51,42 +52,35 @@ function ModalQuestionario({ person, onClose }) {
   const [swotData, setSwotData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [gerandoPdf, setGerandoPdf] = useState(false)
+  const [erroPdf, setErroPdf] = useState(null)
   const [error, setError] = useState(null)
 
-  if (!person) return null
-
-  // Carregar SWOT ao abrir o modal
-  useEffect(() => {
-    if (person?.id) {
-      loadSwot()
+  const loadSwot = useCallback(async () => {
+    if (!person?.id) {
+      setSwotData(null)
+      setLoading(false)
+      return
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [person?.id])
 
-  const loadSwot = async () => {
     try {
       setLoading(true)
       setError(null)
-      
-      // Verificar se person.id é um UUID válido
-      if (!person.id || typeof person.id !== 'string' || !person.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        console.error('ID inválido:', person.id)
+
+      if (
+        typeof person.id !== 'string' ||
+        !person.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
+      ) {
         setError('ID da pessoa inválido.')
         setSwotData(null)
-        setLoading(false)
         return
       }
 
-      // Buscar SWOT do usuário específico
       const response = await api.get(`/questionario-resposta/swot/user/${person.id}`)
-      const dadosTransformados = prepararDadosSwot(response.data)
-      
-      setSwotData(dadosTransformados)
+      setSwotData(prepararDadosSwot(response.data))
     } catch (err) {
       console.error('Erro ao carregar SWOT:', err)
-      const errorMessage = err.response?.data?.error || err.message || 'Erro desconhecido'
       const statusCode = err.response?.status
-      
+
       if (statusCode === 404) {
         setError('Usuário não encontrado ou não possui SWOT.')
       } else if (statusCode === 401) {
@@ -94,22 +88,32 @@ function ModalQuestionario({ person, onClose }) {
       } else if (statusCode === 403) {
         setError('Acesso negado. Você não tem permissão para ver este SWOT.')
       } else {
-        setError(`Erro ao carregar SWOT: ${errorMessage}`)
+        setError(extrairErroApi(err, 'Erro ao carregar SWOT.'))
       }
       setSwotData(null)
     } finally {
       setLoading(false)
     }
-  }
+  }, [person?.id])
+
+  useEffect(() => {
+    loadSwot()
+  }, [loadSwot])
+
+  if (!person) return null
 
   const handleSavePdf = async () => {
     if (!swotData || !person?.id || gerandoPdf) return
     setGerandoPdf(true)
+    setErroPdf(null)
     try {
       const tracosDetalhados = await coletarDadosTracosParaPdf(swotData, person.id)
       gerarSwotPdf(person.name, swotData, tracosDetalhados)
     } catch (err) {
       console.error('Erro ao gerar PDF:', err)
+      setErroPdf(
+        'Não foi possível gerar o PDF. Tente novamente ou entre em contato com a pesquisadora principal.',
+      )
     } finally {
       setGerandoPdf(false)
     }
@@ -130,15 +134,20 @@ function ModalQuestionario({ person, onClose }) {
               <h2 className="text-xl font-bold mb-2">SWOT - Respostas do Questionário</h2>
               <p className="text-slate-600">Pessoa: {person.name}</p>
             </div>
-            <button
-              type="button"
-              onClick={handleSavePdf}
-              disabled={!swotData || totalItens === 0 || loading || gerandoPdf}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Download className="w-4 h-4" />
-              {gerandoPdf ? 'Gerando…' : 'PDF'}
-            </button>
+            <div className="flex flex-col items-end gap-2">
+              {erroPdf && (
+                <p className="text-xs text-red-600 max-w-xs text-right">{erroPdf}</p>
+              )}
+              <button
+                type="button"
+                onClick={handleSavePdf}
+                disabled={!swotData || totalItens === 0 || loading || gerandoPdf}
+                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Download className="w-4 h-4" />
+                {gerandoPdf ? 'Gerando…' : 'PDF'}
+              </button>
+            </div>
           </div>
         </div>
 

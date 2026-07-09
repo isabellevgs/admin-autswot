@@ -45,12 +45,12 @@ function Topbar() {
   }, [isMenuOpen]);
 
   return (
-    <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+    <header className="mt-4">
       <nav className="bg-violet-800 rounded-2xl px-4 sm:px-6 py-0 shadow-xl shadow-violet-900/30 flex items-center justify-between gap-4 h-16">
 
         {/* Logo */}
         <Link
-          to="/home"
+          to="/pessoas"
           className="flex items-center gap-2.5 shrink-0 group"
         >
           <span className="text-white font-bold text-lg tracking-tight hidden sm:block">

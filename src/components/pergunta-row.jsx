@@ -1,20 +1,24 @@
 import { useState } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 import ModalConfirmarExclusao from '@/components/modal-confirmar-exclusao'
 
 function PerguntaRow({ pergunta, tipo, isLast, onEdit, onDelete }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [erroExclusao, setErroExclusao] = useState(null)
 
   const handleConfirmDelete = async () => {
     setDeleting(true)
+    setErroExclusao(null)
     try {
       await api.delete(`${tipo.endpoint}/${pergunta.id}`)
       onDelete(pergunta.id)
-    } catch {
-      setDeleting(false)
       setShowConfirm(false)
+    } catch (err) {
+      setErroExclusao(extrairErroApi(err, 'Não foi possível excluir a pergunta.'))
+      setDeleting(false)
     }
   }
 
@@ -50,8 +54,12 @@ function PerguntaRow({ pergunta, tipo, isLast, onEdit, onDelete }) {
           titulo="Excluir pergunta"
           descricao={pergunta[tipo.campoTexto] ?? `Traço ${pergunta.numeroTraco}`}
           carregando={deleting}
+          erro={erroExclusao}
           onConfirmar={handleConfirmDelete}
-          onCancelar={() => setShowConfirm(false)}
+          onCancelar={() => {
+            setShowConfirm(false)
+            setErroExclusao(null)
+          }}
         />
       )}
     </>

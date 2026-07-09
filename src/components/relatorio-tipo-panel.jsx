@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Plus, Loader2, Search as SearchIcon } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 import RelatorioRow from '@/components/relatorio-row'
 import ModalRelatorioForm from '@/components/modal-relatorio-form'
 import { ENDPOINT_CH, ENDPOINT_SH } from '@/constants/relatorios-config'
@@ -39,8 +40,8 @@ function RelatorioTipoPanel({ tipo }) {
         const res = await api.get(tipo.endpoint)
         setRelatorios(Array.isArray(res.data) ? res.data : [])
       }
-    } catch {
-      setError('Erro ao carregar relatórios.')
+    } catch (err) {
+      setError(extrairErroApi(err, 'Erro ao carregar relatórios.'))
     } finally {
       setLoading(false)
     }

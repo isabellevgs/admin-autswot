@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom'
 import { ExternalLink } from 'lucide-react'
+import { safeImageUrl } from '@/utils/safe-image-url'
 
 function CardPost({ card, onClick }) {
   const handleButtonClick = (e) => {
-    e.stopPropagation() // Previne que o onClick do card seja acionado
+    e.stopPropagation()
   }
+
+  const imagemSegura = safeImageUrl(card.imageUrl)
 
   return (
     <div
@@ -13,7 +16,7 @@ function CardPost({ card, onClick }) {
     >
       <div
         className="h-32 bg-center bg-cover bg-violet-200"
-        style={card.imageUrl ? { backgroundImage: `url(${card.imageUrl})` } : {}}
+        style={imagemSegura ? { backgroundImage: `url(${imagemSegura})` } : {}}
       />
       
       <div className="p-5 bg-white border-t border-slate-200">

@@ -6,7 +6,9 @@ import {
   getRefreshToken,
   logout,
   ACCESS_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
 } from "./authService";
+import { isAuthCredentialEndpoint, shouldAttemptTokenRefresh } from "@/utils/api-interceptors";
 
 /** URL da API — em produção usa sempre /api (same-origin via nginx). */
 function resolveApiBaseUrl() {
@@ -19,7 +21,6 @@ function resolveApiBaseUrl() {
     }
   }
 
-  // Bundle antigo com URL absoluta cross-origin (ex.: https://api.autswot.com)
   if (configured.startsWith("http://") || configured.startsWith("https://")) {
     return "/api";
   }
@@ -31,12 +32,10 @@ const API_URL = resolveApiBaseUrl();
 const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 10000;
 const IS_DEV = import.meta.env.DEV;
 
-// Log de configuração (apenas em desenvolvimento)
 if (IS_DEV) {
   console.log(`API: ${API_URL}`);
 }
 
-// Cria uma instância do Axios
 const api = axios.create({
   baseURL: API_URL,
   timeout: API_TIMEOUT,
@@ -45,9 +44,83 @@ const api = axios.create({
   },
 });
 
-// Interceptor: adiciona o access token JWT em todas as requisições
+let refreshPromise = null;
+
+async function renovarAccessToken() {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      throw new Error("Refresh token ausente");
+    }
+
+    const { data } = await axios.post(
+      `${api.defaults.baseURL}/auth/refresh-token`,
+      { refreshToken }
+    );
+
+    localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+    if (data.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+    }
+
+    const { syncSessionFromApi } = await import("./authService.js");
+    await syncSessionFromApi();
+
+    return data.accessToken;
+  })();
+
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
+  }
+}
+
+function isErroDeRede(err) {
+  if (err?.response) return false
+  const code = err?.code
+  return code === 'ECONNREFUSED' || code === 'ETIMEDOUT' || code === 'ERR_NETWORK'
+}
+
+async function tratarAcessoNegado() {
+  const { syncSessionFromApi, logout } = await import("./authService.js");
+  try {
+    const user = await syncSessionFromApi();
+    const role = user?.role?.toString().trim().toUpperCase();
+    if (role !== 'SUPER_USER') {
+      logout();
+      window.location.href = "/login";
+    }
+    return;
+  } catch (err) {
+    if (isErroDeRede(err)) {
+      return;
+    }
+
+    const status = err?.response?.status;
+    const acessoRevogado =
+      status === 401 ||
+      status === 403 ||
+      (err?.message ?? '').includes('Acesso negado');
+
+    if (acessoRevogado) {
+      logout();
+      window.location.href = "/login";
+    }
+  }
+}
+
 api.interceptors.request.use(
   async (config) => {
+    if (isAuthCredentialEndpoint(config.url, config.baseURL ?? api.defaults.baseURL)) {
+      delete config.headers.Authorization;
+      return config;
+    }
+
     const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -57,13 +130,11 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor: renovar token automaticamente quando expirar
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Log de erros (apenas em desenvolvimento)
     if (IS_DEV) {
       if (error.code === "ECONNREFUSED") {
         console.error(`Conexão recusada: ${API_URL}`);
@@ -79,34 +150,30 @@ api.interceptors.response.use(
       }
     }
 
-    // Se receber 401 e ainda não tentou renovar
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 403) {
+      await tratarAcessoNegado();
+      return Promise.reject(error);
+    }
+
+    if (shouldAttemptTokenRefresh(error, originalRequest, getAccessToken)) {
       originalRequest._retry = true;
 
       try {
-        const refreshToken = getRefreshToken();
-
-        if (!refreshToken) {
-          logout();
-          window.location.href = "/login";
-          return Promise.reject(error);
-        }
-
-        // Tentar renovar o access token
-        const { data } = await axios.post(
-          `${api.defaults.baseURL}/auth/refresh-token`,
-          { refreshToken }
-        );
-
-        // Salvar novo access token
-        localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-
-        // Atualizar header da requisição original
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-
-        // Tentar novamente a requisição original
+        const accessToken = await renovarAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
+        const novoAccess = getAccessToken();
+        const tokenAnterior = originalRequest.headers?.Authorization?.replace(/^Bearer\s+/i, '');
+        if (novoAccess && novoAccess !== tokenAnterior && !originalRequest._storageRetry) {
+          originalRequest._storageRetry = true;
+          originalRequest.headers.Authorization = `Bearer ${novoAccess}`;
+          return api(originalRequest);
+        }
         logout();
         window.location.href = "/login";
         return Promise.reject(refreshError);

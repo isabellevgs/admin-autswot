@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Loader2, X, Plus } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 
 // Fora do componente — função pura, sem re-criações desnecessárias
 function buildForm(campos, data) {
@@ -18,21 +19,15 @@ function buildForm(campos, data) {
   }, {})
 }
 
-function ArrayField({ value, options, onChange }) {
+function ArrayField({ value, onChange }) {
   const items = Array.isArray(value) ? value : []
-  const [selected, setSelected] = useState('')
-
-  // Opções do select: do pool passado, excluindo itens já nesta lista
-  const availableOptions = options.filter((opt) => !items.includes(opt))
-
-  // Se a seleção atual saiu das opções disponíveis, reseta sem useEffect
-  const safeSelected = availableOptions.includes(selected) ? selected : ''
-  if (safeSelected !== selected) setSelected(safeSelected)  // sync síncrono seguro no render
+  const [texto, setTexto] = useState('')
 
   const add = () => {
-    if (!safeSelected) return
-    onChange([...items, safeSelected])
-    setSelected('')
+    const trimmed = texto.trim()
+    if (!trimmed || items.includes(trimmed)) return
+    onChange([...items, trimmed])
+    setTexto('')
   }
 
   const remove = (idx) => onChange(items.filter((_, i) => i !== idx))
@@ -40,21 +35,24 @@ function ArrayField({ value, options, onChange }) {
   return (
     <div>
       <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-        <select
-          value={safeSelected}
-          onChange={(e) => setSelected(e.target.value)}
-          style={{ flex: 1, padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px', outline: 'none', background: '#fff' }}
-        >
-          <option value="">Selecione um item…</option>
-          {availableOptions.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <input
+          type="text"
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              add()
+            }
+          }}
+          placeholder="Digite um valor e adicione…"
+          style={{ flex: 1, padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+        />
         <button
           type="button"
           onClick={add}
-          disabled={!safeSelected}
-          style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: safeSelected ? '#7c3aed' : '#e2e8f0', color: safeSelected ? '#fff' : '#94a3b8', cursor: safeSelected ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', flexShrink: 0 }}
+          disabled={!texto.trim()}
+          style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: texto.trim() ? '#7c3aed' : '#e2e8f0', color: texto.trim() ? '#fff' : '#94a3b8', cursor: texto.trim() ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', flexShrink: 0 }}
         >
           <Plus size={13} /> Adicionar
         </button>
@@ -64,7 +62,7 @@ function ArrayField({ value, options, onChange }) {
       ) : (
         <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {items.map((item, idx) => (
-            <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '5px 10px' }}>
+            <li key={`${item}-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '5px 10px' }}>
               <span style={{ flex: 1, fontSize: '13px', color: '#334155' }}>{item}</span>
               <button
                 type="button"
@@ -86,16 +84,6 @@ function ModalPerguntaForm({ tipo, pergunta, onSave, onClose }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
-  // Pool fixo: inicializado UMA vez com todos os valores originais dos 3 arrays
-  const arrayPool = useMemo(() => {
-    const arrayCampos = tipo.campos.filter((c) => c.type === 'array')
-    const initial = buildForm(tipo.campos, pergunta)
-    return [...new Set(arrayCampos.flatMap((c) => initial[c.name] || []))]
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const arrayCampos = tipo.campos.filter((c) => c.type === 'array')
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -103,14 +91,23 @@ function ModalPerguntaForm({ tipo, pergunta, onSave, onClose }) {
     try {
       const payload = { ...form }
       tipo.campos.filter((c) => c.type === 'number').forEach((c) => {
-        if (payload[c.name] !== '') payload[c.name] = Number(payload[c.name])
+        const val = payload[c.name]
+        if (val === '' || val === null || val === undefined) {
+          delete payload[c.name]
+        } else {
+          const num = Number(val)
+          if (!Number.isFinite(num)) {
+            throw new Error(`"${c.label}" deve ser um número válido.`)
+          }
+          payload[c.name] = num
+        }
       })
       const result = pergunta?.id
         ? await api.put(`${tipo.endpoint}/${pergunta.id}`, payload)
         : await api.post(tipo.endpoint, payload)
       onSave(result.data?.registro ?? result.data)
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Erro ao salvar.')
+      setError(extrairErroApi(err, 'Erro ao salvar.'))
     } finally {
       setSaving(false)
     }
@@ -146,18 +143,7 @@ function ModalPerguntaForm({ tipo, pergunta, onSave, onClose }) {
           )}
 
           <form id="form-pergunta" onSubmit={handleSubmit}>
-            {tipo.campos.map((campo, idx) => {
-              // Para campos array: calcula opções disponíveis (pool − usados em outros − usados aqui)
-              let arrayOptions = []
-              if (campo.type === 'array') {
-                const usedElsewhere = arrayCampos
-                  .filter((c) => c.name !== campo.name)
-                  .flatMap((c) => Array.isArray(form[c.name]) ? form[c.name] : [])
-                const usedHere = Array.isArray(form[campo.name]) ? form[campo.name] : []
-                arrayOptions = arrayPool.filter((v) => !usedElsewhere.includes(v) && !usedHere.includes(v))
-              }
-
-              return (
+            {tipo.campos.map((campo, idx) => (
                 <div key={campo.name} style={{ marginBottom: idx < tipo.campos.length - 1 ? '14px' : 0 }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '5px' }}>
                     {campo.label}
@@ -167,7 +153,6 @@ function ModalPerguntaForm({ tipo, pergunta, onSave, onClose }) {
                   {campo.type === 'array' ? (
                     <ArrayField
                       value={form[campo.name]}
-                      options={arrayOptions}
                       onChange={(val) => setForm((prev) => ({ ...prev, [campo.name]: val }))}
                     />
                   ) : campo.type === 'textarea' ? (
@@ -188,8 +173,7 @@ function ModalPerguntaForm({ tipo, pergunta, onSave, onClose }) {
                     />
                   )}
                 </div>
-              )
-            })}
+              ))}
           </form>
         </div>
 

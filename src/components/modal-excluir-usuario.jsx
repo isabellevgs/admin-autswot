@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 
 function ModalExcluirUsuario({ person, onClose, onDeleted }) {
   const [excluindo, setExcluindo] = useState(false)
@@ -15,11 +16,7 @@ function ModalExcluirUsuario({ person, onClose, onDeleted }) {
       onDeleted?.()
       onClose()
     } catch (err) {
-      setErro(
-        err?.response?.data?.error ??
-          err?.response?.data?.message ??
-          'Não foi possível excluir o usuário. Tente novamente.'
-      )
+      setErro(extrairErroApi(err, 'Não foi possível excluir o usuário. Tente novamente.'))
       setExcluindo(false)
     }
   }

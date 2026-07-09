@@ -10,6 +10,7 @@ import {
   TITULO_EXERCICIOS,
   introExercicios,
   questoesDoQuadrante,
+  textosPerguntasQuadrante,
 } from '@/constants/swot-pdf-textos'
 import {
   TYPE,
@@ -29,30 +30,11 @@ const SECOES = [
 ]
 
 const PERGUNTAS_TEXTO = {
-  ameaca: [
-    'Quando e como foi a última vez que você se lembra deste traço sendo manifestado? Em que momento esse traço dificultou algo na sua rotina, estudos, trabalho ou relacionamentos?',
-    'Quais foram as consequências negativas ou positivas dessa situação e como você se sentiu? Impactou prazos, relacionamentos, sua saúde mental?',
-    'O que você pode fazer para evitar que esse traço se manifeste ou para reduzir o impacto negativo dele?',
-    'O que as outras pessoas (professores, chefes, colegas, familiares, amigos, parceiros) podem fazer para te dar apoio e suporte?',
-    'Qual é a sua necessidade específica de apoio ou suporte referente a esse traço?',
-    'O que você pode fazer, somado ao que os outros podem fazer, é suficiente? Se não for, liste o que mais seria necessário e que recursos você necessita.',
-    'Como você pode conseguir as coisas citadas na questão acima? Liste e explique.',
-  ],
-  fraqueza: null,
-  oportunidade: [
-    'Quando e como foi a última vez que você se lembra deste traço sendo manifestado de forma positiva ou negativa?',
-    'Quais foram as consequências negativas ou positivas dessa situação e como você se sentiu?',
-    'Se esse traço for trabalhado, que benefícios ele poderia trazer para sua vida? Qual é o potencial positivo escondido por trás da dificuldade?',
-    'Que tipo de apoio, estrutura ou suporte você precisaria para transformar esse traço em algo positivo na sua vida?',
-    'O que você pode começar a fazer para transformar esse traço em uma força? Liste atitudes, hábitos, pequenas mudanças que dependem de você.',
-    'O que as outras pessoas podem fazer para te dar apoio e suporte?',
-    'O que você pode fazer somado ao que os outros podem fazer é suficiente? Que recursos você precisa?',
-    'Como você pode conseguir as coisas citadas na questão acima? Liste e explique.',
-  ],
+  ameaca: textosPerguntasQuadrante('ameaca'),
+  fraqueza: textosPerguntasQuadrante('fraqueza'),
+  oportunidade: textosPerguntasQuadrante('oportunidade'),
   forca: [],
 }
-
-PERGUNTAS_TEXTO.fraqueza = PERGUNTAS_TEXTO.ameaca
 
 function perguntasDoQuadrantePdf(quadrante) {
   const qs = questoesDoQuadrante(quadrante)

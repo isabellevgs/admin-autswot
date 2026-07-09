@@ -1,36 +1,21 @@
 import { useState, useEffect } from 'react'
 import { X, ChevronDown, ChevronRight, MessageSquare } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
+import {
+  PERGUNTAS_TEXTO_POR_QUADRANTE,
+  questoesDoQuadrante,
+} from '@/constants/swot-pdf-textos'
 
-// ─── Textos das perguntas (espelho do app) ───────────────────────────────────
-
-const PERGUNTAS_AMEACA_FRAQUEZA = [
-  { id: 'q1', texto: 'Quando e como foi a última vez que você se lembra deste traço sendo manifestado? Em que momento esse traço dificultou algo na sua rotina, estudos, trabalho ou relacionamentos?' },
-  { id: 'q2', texto: 'Quais foram as consequências negativas ou positivas dessa situação e como você se sentiu? Impactou prazos, relacionamentos, sua saúde mental?' },
-  { id: 'q3', texto: 'O que você pode fazer para evitar que esse traço se manifeste ou para reduzir o impacto negativo dele?' },
-  { id: 'q4', texto: 'O que as outras pessoas (professores, chefes, colegas, familiares, amigos, parceiros) podem fazer para te dar apoio e suporte?' },
-  { id: 'q5', texto: 'Qual é a sua necessidade específica de apoio ou suporte referente a esse traço?' },
-  { id: 'q6', texto: 'O que você pode fazer, somado ao que os outros podem fazer, é suficiente? Se não for, liste o que mais seria necessário e que recursos você necessita.' },
-  { id: 'q7', texto: 'Como você pode conseguir as coisas citadas na questão acima? Liste e explique.' },
-]
-
-const PERGUNTAS_OPORTUNIDADE = [
-  { id: 'q1', texto: 'Quando e como foi a última vez que você se lembra deste traço sendo manifestado de forma positiva ou negativa?' },
-  { id: 'q2', texto: 'Quais foram as consequências negativas ou positivas dessa situação e como você se sentiu?' },
-  { id: 'q3', texto: 'Se esse traço for trabalhado, que benefícios ele poderia trazer para sua vida? Qual é o potencial positivo escondido por trás da dificuldade?' },
-  { id: 'q4', texto: 'Que tipo de apoio, estrutura ou suporte você precisaria para transformar esse traço em algo positivo na sua vida?' },
-  { id: 'q5', texto: 'O que você pode começar a fazer para transformar esse traço em uma força? Liste atitudes, hábitos, pequenas mudanças que dependem de você.' },
-  { id: 'q6', texto: 'O que as outras pessoas podem fazer para te dar apoio e suporte?' },
-  { id: 'q7', texto: 'O que você pode fazer somado ao que os outros podem fazer é suficiente? Que recursos você precisa?' },
-  { id: 'q8', texto: 'Como você pode conseguir as coisas citadas na questão acima? Liste e explique.' },
-]
-
-const PERGUNTAS_POR_QUADRANTE = {
-  ameaca:       PERGUNTAS_AMEACA_FRAQUEZA,
-  fraqueza:     PERGUNTAS_AMEACA_FRAQUEZA,
-  oportunidade: PERGUNTAS_OPORTUNIDADE,
-  forca:        [],
-}
+const PERGUNTAS_POR_QUADRANTE = Object.fromEntries(
+  Object.entries(PERGUNTAS_TEXTO_POR_QUADRANTE).map(([quadrante, textos]) => [
+    quadrante,
+    questoesDoQuadrante(quadrante).map((q, i) => ({
+      id: q.id,
+      texto: textos[i] ?? q.id,
+    })),
+  ]),
+)
 
 const QUADRANTE_LABEL = {
   ameaca:       'Ameaças',
@@ -111,7 +96,7 @@ function ModalReflexoesTraco({ person, onClose }) {
     setLoading(true)
     api.get(`/reflexao-traco/user/${person.id}`)
       .then(res => setReflexoes(res.data))
-      .catch(() => setError('Não foi possível carregar as reflexões.'))
+      .catch((err) => setError(extrairErroApi(err, 'Não foi possível carregar as reflexões.')))
       .finally(() => setLoading(false))
   }, [person?.id])
 

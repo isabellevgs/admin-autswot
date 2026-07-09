@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Loader2, X } from 'lucide-react'
 import api from '@/services/api'
+import { fetchAllPages } from '@/utils/fetch-all-pages'
+import { extrairErroApi } from '@/utils/api-errors'
 import BulletListField from '@/components/bullet-list-field'
 import AutoResizeTextarea from '@/components/auto-resize-textarea'
 import {
@@ -81,6 +83,7 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
     relatorio?.tipoRelatorio ?? (isTracoDetalhe ? tipo.tipoBanco : 'SH')
   )
   const [numeroTraco, setNumeroTraco] = useState(relatorio?.numeroTraco ? String(relatorio.numeroTraco) : '')
+  const [tituloRelatorio, setTituloRelatorio] = useState(relatorio?.titulo ?? '')
   const [tracos, setTracos] = useState([])
   const [loadingTracos, setLoadingTracos] = useState(false)
   const [form, setForm] = useState(() => buildForm(campos, relatorio))
@@ -95,11 +98,11 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
     if (!selecionaTraco || !tracosEndpoint) return
     setLoadingTracos(true)
     try {
-      const res = await api.get(tracosEndpoint, { params: { page: 1, limit: 500 } })
-      const lista = res.data?.registros ?? []
+      const lista = await fetchAllPages(tracosEndpoint, { itemsKey: 'registros', limit: 100 })
       setTracos(lista.sort((a, b) => a.numeroTraco - b.numeroTraco))
-    } catch {
+    } catch (err) {
       setTracos([])
+      setError(extrairErroApi(err, 'Não foi possível carregar os traços. Tente novamente.'))
     } finally {
       setLoadingTracos(false)
     }
@@ -128,6 +131,21 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
     }
   }, [tipoRelatorio, tracosUsados, numeroTraco, isEdit])
 
+  useEffect(() => {
+    if (isEdit) {
+      setTituloRelatorio(relatorio?.titulo ?? '')
+      return
+    }
+    if (!numeroTraco) {
+      setTituloRelatorio('')
+      return
+    }
+    const traco = tracos.find((t) => String(t.numeroTraco) === numeroTraco)
+    if (traco) {
+      setTituloRelatorio(tituloDoTraco(traco) ?? '')
+    }
+  }, [isEdit, relatorio?.titulo, numeroTraco, tracos])
+
   const handleTipoChange = (novoTipo) => {
     setTipoRelatorio(novoTipo)
     if (!isEdit) {
@@ -135,16 +153,12 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
     }
   }
 
-  const tituloSelecionado = (() => {
-    if (isEdit) return relatorio.titulo
-    const traco = tracos.find((t) => String(t.numeroTraco) === numeroTraco)
-    return tituloDoTraco(traco)
-  })()
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
     setError(null)
+
+    const tituloFinal = tituloRelatorio.trim()
 
     try {
       if (selecionaTraco && !numeroTraco) {
@@ -152,8 +166,13 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
         setSaving(false)
         return
       }
-      if (selecionaTraco && !tituloSelecionado) {
-        setError('O traço selecionado não possui título.')
+      if (selecionaTraco && !Number.isFinite(Number(numeroTraco))) {
+        setError('Traço inválido.')
+        setSaving(false)
+        return
+      }
+      if (selecionaTraco && !tituloFinal) {
+        setError('Informe o título do relatório.')
         setSaving(false)
         return
       }
@@ -180,11 +199,11 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
       let body = payload
 
       if (isAmeaca) {
-        body = { ...payload, numeroTraco: Number(numeroTraco), titulo: tituloSelecionado }
+        body = { ...payload, numeroTraco: Number(numeroTraco), titulo: tituloFinal }
       } else if (isTracoDetalhe) {
         body = isEdit
-          ? payload
-          : montarPayloadTracoDetalhe(tipo.tipoBanco, numeroTraco, tituloSelecionado, payload)
+          ? { ...payload, titulo: tituloFinal }
+          : montarPayloadTracoDetalhe(tipo.tipoBanco, numeroTraco, tituloFinal, payload)
       }
 
       const result = isEdit
@@ -193,7 +212,7 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
 
       onSave({ ...result.data, tipoRelatorio: isTracoDetalhe ? tipo.tipoBanco : tipoRelatorio })
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Erro ao salvar.')
+      setError(extrairErroApi(err, 'Erro ao salvar.'))
     } finally {
       setSaving(false)
     }
@@ -306,8 +325,18 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
 
         <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center justify-between gap-3">
+              <span>{error}</span>
+              {selecionaTraco && (
+                <button
+                  type="button"
+                  onClick={loadTracos}
+                  disabled={loadingTracos}
+                  className="shrink-0 text-sm font-semibold text-red-800 hover:underline disabled:opacity-50"
+                >
+                  Tentar novamente
+                </button>
+              )}
             </div>
           )}
 
@@ -372,6 +401,21 @@ function ModalRelatorioForm({ tipo, relatorio, relatoriosExistentes = [], onSave
                       )}
                     </>
                   )}
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="titulo-relatorio" className="block text-sm font-medium text-slate-700 mb-1">
+                    Título do relatório
+                  </label>
+                  <input
+                    id="titulo-relatorio"
+                    type="text"
+                    value={tituloRelatorio}
+                    onChange={(e) => setTituloRelatorio(e.target.value)}
+                    maxLength={300}
+                    className={selectClass}
+                    required
+                    placeholder="Título exibido no SWOT e no PDF"
+                  />
                 </div>
               </div>
             )}

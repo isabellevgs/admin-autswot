@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import PageContainer from '@/components/page-container'
 import Search from '@/components/search'
 import PessoasTable from '@/components/pessoas-table'
-import ModalPerguntas from '@/components/modal-perguntas'
 import ModalDiario from '@/components/modal-diario'
 import ModalQuestionario from '@/components/modal-questionario'
 import ModalReflexoesTraco from '@/components/modal-reflexoes-traco'
@@ -20,7 +18,6 @@ function Pessoas() {
 
   const handleOpenQuestionario = (person) => { setSelectedPerson(person); setModalType('questionario') }
   const handleOpenDiario = (person) => { setSelectedPerson(person); setModalType('diario') }
-  const handleEditPerguntas = (person) => { setSelectedPerson(person); setModalType('editar-perguntas') }
   const handleOpenReflexoes = (person) => { setSelectedPerson(person); setModalType('reflexoes-traco') }
   const handleVerCadastro = (person) => { setSelectedPerson(person); setModalType('ver-cadastro') }
   const handleRedefinirSenha = (person) => { setSelectedPerson(person); setModalType('redefinir-senha') }
@@ -28,7 +25,7 @@ function Pessoas() {
   const handleClose = () => { setModalType(null); setSelectedPerson(null) }
 
   return (
-    <PageContainer>
+    <>
       <h1 className="mt-10 font-bold text-3xl">Pessoas</h1>
 
       <Search onSearch={setSearchTerm} placeholder="Buscar por nome ou e-mail..." />
@@ -49,7 +46,6 @@ function Pessoas() {
           onSort={handleSort}
           onOpenQuestionario={handleOpenQuestionario}
           onOpenDiario={handleOpenDiario}
-          onEditPerguntas={handleEditPerguntas}
           onOpenReflexoes={handleOpenReflexoes}
           onVerCadastro={handleVerCadastro}
           onRedefinirSenha={handleRedefinirSenha}
@@ -65,14 +61,13 @@ function Pessoas() {
 
       {modalType === 'questionario' && <ModalQuestionario person={selectedPerson} onClose={handleClose} />}
       {modalType === 'diario' && <ModalDiario person={selectedPerson} onClose={handleClose} />}
-      {modalType === 'editar-perguntas' && <ModalPerguntas person={selectedPerson} onClose={handleClose} />}
       {modalType === 'reflexoes-traco' && <ModalReflexoesTraco person={selectedPerson} onClose={handleClose} />}
       {modalType === 'ver-cadastro' && <ModalCadastro person={selectedPerson} onClose={handleClose} />}
       {modalType === 'redefinir-senha' && <ModalRedefinirSenha person={selectedPerson} onClose={handleClose} />}
       {modalType === 'excluir-usuario' && (
         <ModalExcluirUsuario person={selectedPerson} onClose={handleClose} onDeleted={reload} />
       )}
-    </PageContainer>
+    </>
   )
 }
 

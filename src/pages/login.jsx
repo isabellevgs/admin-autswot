@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,9 +12,13 @@ function Login() {
   const { login, signed } = useAuth();
   const navigate = useNavigate();
 
-  // Se já estiver logado, redireciona
+  useEffect(() => {
+    if (signed) {
+      navigate('/pessoas', { replace: true });
+    }
+  }, [signed, navigate]);
+
   if (signed) {
-    navigate('/home', { replace: true });
     return null;
   }
 
@@ -25,7 +29,7 @@ function Login() {
 
     try {
       await login(email, password);
-      navigate('/home', { replace: true });
+      navigate('/pessoas', { replace: true });
     } catch (err) {
       setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.');
     } finally {
@@ -104,4 +108,3 @@ function Login() {
 }
 
 export default Login;
-

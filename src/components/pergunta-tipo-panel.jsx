@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Loader2 } from 'lucide-react'
-import api from '@/services/api'
+import { fetchAllPages } from '@/utils/fetch-all-pages'
+import { extrairErroApi } from '@/utils/api-errors'
 import PerguntaRow from '@/components/pergunta-row'
 import ModalPerguntaForm from '@/components/modal-pergunta-form'
 
@@ -14,10 +15,10 @@ function PerguntaTipoPanel({ tipo }) {
     setLoading(true)
     setError(null)
     try {
-      const res = await api.get(tipo.endpoint, { params: { page: 1, limit: 500 } })
-      setPerguntas(res.data?.registros ?? [])
-    } catch {
-      setError('Erro ao carregar perguntas.')
+      const perguntasLista = await fetchAllPages(tipo.endpoint, { itemsKey: 'registros', limit: 100 })
+      setPerguntas(perguntasLista)
+    } catch (err) {
+      setError(extrairErroApi(err, 'Erro ao carregar perguntas.'))
     } finally {
       setLoading(false)
     }

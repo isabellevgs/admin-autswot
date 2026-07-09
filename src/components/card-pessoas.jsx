@@ -1,4 +1,4 @@
-function CardPessoas({ person, onOpenQuestionario, onOpenDiario, onEditPerguntas }) {
+function CardPessoas({ person, onOpenQuestionario, onOpenDiario }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition overflow-hidden">
       <div className="p-5 bg-white">
@@ -19,14 +19,6 @@ function CardPessoas({ person, onOpenQuestionario, onOpenDiario, onEditPerguntas
             className="w-full px-4 py-2 rounded-md border border-violet-600 bg-transparent text-violet-600 hover:bg-violet-600 hover:text-white transition-colors text-sm font-medium"
           >
             Ver diário
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => onEditPerguntas(person)}
-            className="w-full px-4 py-2 rounded-md border border-violet-600 bg-transparent text-violet-600 hover:bg-violet-600 hover:text-white transition-colors text-sm font-medium"
-          >
-            Perguntas
           </button>
         </div>
       </div>

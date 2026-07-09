@@ -5,6 +5,23 @@ export const ACCESS_TOKEN_KEY = "@autswot-admin-access-token";
 export const REFRESH_TOKEN_KEY = "@autswot-admin-refresh-token";
 export const USER_KEY = "@autswot-admin-user";
 
+let sessionUpdateHandler = null;
+
+export function setSessionUpdateHandler(handler) {
+  sessionUpdateHandler = handler;
+}
+
+/**
+ * Re-sincroniza usuário com /auth/me e atualiza contexto React.
+ */
+export async function syncSessionFromApi() {
+  const user = await getCurrentUser();
+  if (sessionUpdateHandler) {
+    sessionUpdateHandler(user);
+  }
+  return user;
+}
+
 // Verifica se há um token no localStorage (usuário logado)
 export const isAuthenticated = () => localStorage.getItem(ACCESS_TOKEN_KEY) !== null;
 

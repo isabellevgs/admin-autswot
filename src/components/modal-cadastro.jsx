@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, ClipboardList } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 import ProfileRegistrationDisplay from '@/components/profile-registration-display'
 
 function ModalCadastro({ person, onClose }) {
@@ -19,10 +20,7 @@ function ModalCadastro({ person, onClose }) {
         if (!cancelled) setData(resp.user)
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err?.response?.data?.error ??
-              'Não foi possível carregar o cadastro. Tente novamente.'
-          )
+          setError(extrairErroApi(err, 'Não foi possível carregar o cadastro. Tente novamente.'))
         }
       } finally {
         if (!cancelled) setLoading(false)

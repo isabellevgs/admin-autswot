@@ -1,62 +1,22 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import CreatePost from '@/components/create-post'
 import Search from '@/components/search'
 import CardPost from '@/components/card-post'
 import CreatePostButton from '@/components/create-post-button'
-import PageContainer from '@/components/page-container'
+import ModalConfirmarExclusao from '@/components/modal-confirmar-exclusao'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
+import { sanitizeHtml } from '@/utils/sanitize-html'
+import { usePostsList } from '@/hooks/use-posts-list'
 
 function Posts() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [cards, setCards] = useState([])
   const [editingCard, setEditingCard] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const searchTimeoutRef = useRef(null)
+  const [postParaExcluir, setPostParaExcluir] = useState(null)
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExclusao, setErroExclusao] = useState(null)
 
-  // Carregar posts ao montar o componente
-  useEffect(() => {
-    loadPosts('')
-  }, [])
-
-  // Debounce para busca - aguarda 500ms após parar de digitar
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
-
-    searchTimeoutRef.current = setTimeout(() => {
-      loadPosts(searchTerm)
-    }, 500)
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current)
-      }
-    }
-  }, [searchTerm])
-
-  const loadPosts = async (search = '') => {
-    try {
-      setLoading(true)
-      setError(null)
-      const params = {
-        page: '1',
-        limit: '100', // Carregar muitos posts de uma vez
-        ...(search.trim() && { search: search.trim() }),
-      }
-      const response = await api.get('/posts', { params })
-      setCards(response.data.posts || [])
-    } catch (err) {
-      console.error('Erro ao carregar posts:', err)
-      const errorMessage = err.response?.data?.error || err.message || 'Erro ao carregar posts. Tente novamente.'
-      setError(errorMessage)
-      setCards([])
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { cards, searchTerm, setSearchTerm, loading, error, setError, reload } = usePostsList()
 
   const openCreate = () => {
     setEditingCard(null)
@@ -77,46 +37,52 @@ function Posts() {
     try {
       setError(null)
       if (editingCard) {
-        // Atualizar post existente
         await api.put(`/posts/${editingCard.id}`, {
           title,
-          content,
+          content: sanitizeHtml(content),
           imageUrl: imageUrl || undefined,
         })
       } else {
-        // Criar novo post
         await api.post('/posts', {
           title,
-          content,
+          content: sanitizeHtml(content),
           imageUrl: imageUrl || undefined,
         })
       }
-      // Recarregar posts após salvar
-      await loadPosts(searchTerm)
+      await reload()
       closeCreate()
     } catch (err) {
       console.error('Erro ao salvar post:', err)
-      setError(err.response?.data?.error || 'Erro ao salvar post. Tente novamente.')
+      throw err
     }
   }
 
-  const handleDelete = async (postId) => {
-    if (!confirm('Tem certeza que deseja excluir este post?')) {
-      return
-    }
+  const handleRequestDelete = (post) => {
+    setPostParaExcluir(post)
+    setErroExclusao(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!postParaExcluir) return
+    setExcluindo(true)
+    setErroExclusao(null)
     try {
       setError(null)
-      await api.delete(`/posts/${postId}`)
-      await loadPosts(searchTerm)
+      await api.delete(`/posts/${postParaExcluir.id}`)
+      setPostParaExcluir(null)
+      closeCreate()
+      await reload()
     } catch (err) {
       console.error('Erro ao excluir post:', err)
-      setError(err.response?.data?.error || 'Erro ao excluir post. Tente novamente.')
+      setErroExclusao(extrairErroApi(err, 'Erro ao excluir post. Tente novamente.'))
+    } finally {
+      setExcluindo(false)
     }
   }
 
   return (
-    <PageContainer>
-      <h1 className="mt-10 font-bold text-3xl">Comunidade</h1>
+    <>
+      <h1 className="mt-10 font-bold text-3xl">Postagens</h1>
 
       <Search onSearch={setSearchTerm} />
 
@@ -151,11 +117,26 @@ function Posts() {
         isOpen={isCreateOpen}
         onClose={closeCreate}
         onSave={handleSave}
+        onDelete={editingCard ? () => handleRequestDelete(editingCard) : undefined}
         initialData={editingCard}
       />
-    </PageContainer>
+
+      {postParaExcluir && (
+        <ModalConfirmarExclusao
+          titulo="Excluir postagem"
+          descricao={postParaExcluir.title || 'Sem título'}
+          carregando={excluindo}
+          erro={erroExclusao}
+          onConfirmar={handleConfirmDelete}
+          onCancelar={() => {
+            setPostParaExcluir(null)
+            setErroExclusao(null)
+            setExcluindo(false)
+          }}
+        />
+      )}
+    </>
   )
 }
 
 export default Posts
-

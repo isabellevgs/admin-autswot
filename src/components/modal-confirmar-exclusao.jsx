@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import { Loader2, AlertTriangle } from 'lucide-react'
 
-function ModalConfirmarExclusao({ titulo, descricao, carregando, onConfirmar, onCancelar }) {
+function ModalConfirmarExclusao({ titulo, descricao, carregando, erro, onConfirmar, onCancelar }) {
   return createPortal(
     <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
       <div className="absolute inset-0 bg-black/40" onClick={onCancelar} />
@@ -20,6 +20,12 @@ function ModalConfirmarExclusao({ titulo, descricao, carregando, onConfirmar, on
           <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 mb-6">
             <p className="text-sm text-slate-700 font-medium line-clamp-3">{descricao}</p>
           </div>
+        )}
+
+        {erro && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">
+            {erro}
+          </p>
         )}
 
         <div className="flex justify-end gap-3">

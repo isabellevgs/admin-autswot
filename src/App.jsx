@@ -1,7 +1,4 @@
-import Topbar from './components/topbar';
 import { Routes, Route, Navigate } from 'react-router-dom';
-
-
 
 import Posts from './pages/posts';
 import Comunidade from './pages/comunidade';
@@ -10,39 +7,28 @@ import Pessoas from './pages/pessoas';
 import Perguntas from './pages/perguntas';
 import Relatorios from './pages/relatorios';
 import Login from './pages/login';
-import PageContainer from './components/page-container';
+import NotFoundRoute from './routes/NotFoundRoute';
+import AuthenticatedLayout from './components/authenticated-layout';
 import PrivateRoute from './routes/PrivateRoute';
 import LoginRedirect from './components/LoginRedirect';
 
 function App() {
   return (
     <Routes>
-      {/* Rota pública - Login */}
-      <Route 
-        path="/login" 
-        element={<LoginRedirect><Login /></LoginRedirect>} 
+      <Route
+        path="/login"
+        element={<LoginRedirect><Login /></LoginRedirect>}
       />
 
-      {/* Rotas protegidas - Requerem autenticação e role SUPER_USER */}
-      <Route
-        path="/home"
-        element={
-          <PrivateRoute>
-            <PageContainer>
-              <Topbar />
-            </PageContainer>
-            <Pessoas />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/home" element={<Navigate to="/pessoas" replace />} />
+
       <Route
         path="/pessoas"
         element={
           <PrivateRoute>
-            <PageContainer>
-              <Topbar />
-            </PageContainer>
-            <Pessoas />
+            <AuthenticatedLayout>
+              <Pessoas />
+            </AuthenticatedLayout>
           </PrivateRoute>
         }
       />
@@ -50,10 +36,9 @@ function App() {
         path="/posts"
         element={
           <PrivateRoute>
-            <PageContainer>
-              <Topbar />
-            </PageContainer>
-            <Posts />
+            <AuthenticatedLayout>
+              <Posts />
+            </AuthenticatedLayout>
           </PrivateRoute>
         }
       />
@@ -61,10 +46,9 @@ function App() {
         path="/comunidade"
         element={
           <PrivateRoute>
-            <PageContainer>
-              <Topbar />
-            </PageContainer>
-            <Comunidade />
+            <AuthenticatedLayout>
+              <Comunidade />
+            </AuthenticatedLayout>
           </PrivateRoute>
         }
       />
@@ -72,40 +56,35 @@ function App() {
         path="/comunidade/post/:id"
         element={
           <PrivateRoute>
-            <PageContainer>
-              <Topbar />
-            </PageContainer>
-            <PostDetail />
+            <AuthenticatedLayout>
+              <PostDetail />
+            </AuthenticatedLayout>
           </PrivateRoute>
         }
       />
-      
       <Route
         path="/perguntas"
         element={
           <PrivateRoute>
-            <PageContainer>
-              <Topbar />
-            </PageContainer>
-            <Perguntas />
+            <AuthenticatedLayout>
+              <Perguntas />
+            </AuthenticatedLayout>
           </PrivateRoute>
         }
       />
-
       <Route
         path="/relatorios"
         element={
           <PrivateRoute>
-            <PageContainer>
-              <Topbar />
-            </PageContainer>
-            <Relatorios />
+            <AuthenticatedLayout>
+              <Relatorios />
+            </AuthenticatedLayout>
           </PrivateRoute>
         }
       />
 
-      {/* Redirecionar rota raiz */}
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/" element={<Navigate to="/pessoas" replace />} />
+      <Route path="*" element={<NotFoundRoute />} />
     </Routes>
   )
 }

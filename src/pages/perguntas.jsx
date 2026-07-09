@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import PageContainer from '@/components/page-container'
 import PerguntasFolderTabs from '@/components/perguntas-folder-tabs'
 import PerguntaTipoPanel from '@/components/pergunta-tipo-panel'
 import { TIPOS_PERGUNTAS } from '@/constants/perguntas-config'
@@ -9,7 +8,7 @@ function Perguntas() {
   const tipo = TIPOS_PERGUNTAS.find((t) => t.key === activeTab)
 
   return (
-    <PageContainer>
+    <>
       <h1 className="mt-10 font-bold text-3xl">Perguntas</h1>
       <p className="mt-1 text-slate-500 text-sm">Gerencie as perguntas do questionário por tipo</p>
 
@@ -20,7 +19,7 @@ function Perguntas() {
       >
         <PerguntaTipoPanel key={activeTab} tipo={tipo} />
       </PerguntasFolderTabs>
-    </PageContainer>
+    </>
   )
 }
 

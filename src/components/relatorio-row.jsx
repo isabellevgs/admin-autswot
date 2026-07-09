@@ -1,21 +1,25 @@
 import { useState } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
 import api from '@/services/api'
+import { extrairErroApi } from '@/utils/api-errors'
 import ModalConfirmarExclusao from '@/components/modal-confirmar-exclusao'
 import { endpointDoRelatorio } from '@/constants/relatorios-config'
 
 function RelatorioRow({ relatorio, mostrarTipo, isLast, onEdit, onDelete }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [erroExclusao, setErroExclusao] = useState(null)
 
   const handleConfirmDelete = async () => {
     setDeleting(true)
+    setErroExclusao(null)
     try {
       await api.delete(`${endpointDoRelatorio(relatorio)}/${relatorio.id}`)
       onDelete(relatorio.id, relatorio.tipoRelatorio)
-    } catch {
-      setDeleting(false)
       setShowConfirm(false)
+    } catch (err) {
+      setErroExclusao(extrairErroApi(err, 'Não foi possível excluir o relatório.'))
+      setDeleting(false)
     }
   }
 
@@ -54,8 +58,12 @@ function RelatorioRow({ relatorio, mostrarTipo, isLast, onEdit, onDelete }) {
           titulo="Excluir relatório"
           descricao={relatorio.titulo ?? `Traço ${relatorio.numeroTraco}`}
           carregando={deleting}
+          erro={erroExclusao}
           onConfirmar={handleConfirmDelete}
-          onCancelar={() => setShowConfirm(false)}
+          onCancelar={() => {
+            setShowConfirm(false)
+            setErroExclusao(null)
+          }}
         />
       )}
     </>
