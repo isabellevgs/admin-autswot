@@ -123,14 +123,6 @@ export const CAMPOS_RELATORIO_FO = [
     required: false,
     section: SECAO_OPORTUNIDADE,
   },
-  ...CATEGORIAS_EXEMPLOS_OPORTUNIDADE.map(({ name, label }) => ({
-    name,
-    label,
-    type: 'text',
-    required: false,
-    group: 'exemplosOportunidade',
-    section: SECAO_OPORTUNIDADE,
-  })),
   {
     name: 'fraquezaOuAmeaca',
     label: 'Como esse traço pode ser uma fraqueza ou ter potencial de ser uma ameaça',
