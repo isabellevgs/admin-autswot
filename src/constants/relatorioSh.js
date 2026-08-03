@@ -15,9 +15,9 @@ export const CATEGORIAS_EXEMPLOS_OPORTUNIDADE = [
 ]
 
 export const CATEGORIAS_EXEMPLOS_PRATICOS_FORCA = [
-  { field: 'exemplosPraticosEstudo', label: 'No estudo' },
-  { field: 'exemplosPraticosTrabalho', label: 'No trabalho' },
-  { field: 'exemplosPraticosCotidiano', label: 'No cotidiano' },
+  { field: 'exemplosPraticosEstudo', label: '' },
+  { field: 'exemplosPraticosTrabalho', label: '' },
+  { field: 'exemplosPraticosCotidiano', label: '' },
 ]
 
 export function montarItensPorCategoria(detalhe, categorias, legacyArray = []) {
