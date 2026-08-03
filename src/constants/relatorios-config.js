@@ -33,9 +33,9 @@ export const CATEGORIAS_EXEMPLOS_OPORTUNIDADE = [
 ]
 
 export const CATEGORIAS_EXEMPLOS_PRATICOS_FORCA = [
-  { name: 'exemplosPraticosEstudo', label: 'No estudo' },
-  { name: 'exemplosPraticosTrabalho', label: 'No trabalho' },
-  { name: 'exemplosPraticosCotidiano', label: 'No cotidiano' },
+  { name: 'exemplosPraticosEstudo', label: '' },
+  { name: 'exemplosPraticosTrabalho', label: '' },
+  { name: 'exemplosPraticosCotidiano', label: '' },
 ]
 
 export const GRUPOS_RELATORIO = {
