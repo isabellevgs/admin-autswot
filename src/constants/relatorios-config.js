@@ -123,6 +123,14 @@ export const CAMPOS_RELATORIO_FO = [
     required: false,
     section: SECAO_OPORTUNIDADE,
   },
+    ...CATEGORIAS_EXEMPLOS_OPORTUNIDADE.map(({ name, label }) => ({
+    name,
+    label,
+    type: 'text',
+    required: false,
+    group: 'exemplosOportunidade',
+    section: SECAO_OPORTUNIDADE,
+  })),
   {
     name: 'fraquezaOuAmeaca',
     label: 'Como esse traço pode ser uma fraqueza ou ter potencial de ser uma ameaça',
@@ -177,14 +185,6 @@ export const CAMPOS_RELATORIO_FORCA = [
     required: false,
     section: SECAO_OPORTUNIDADE,
   },
-  ...CATEGORIAS_EXEMPLOS_PRATICOS_FORCA.map(({ name, label }) => ({
-    name,
-    label,
-    type: 'text',
-    required: false,
-    group: 'exemplosPraticosForca',
-    section: SECAO_OPORTUNIDADE,
-  })),  
   {
     name: 'fraquezaOuAmeaca',
     label: 'Quando esse traço é uma fraqueza e como ele pode ser uma oportunidade de se transformar em força',
