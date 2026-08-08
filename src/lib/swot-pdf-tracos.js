@@ -171,15 +171,15 @@ function renderDetalheFo(doc, detalhe, quadrante, tipo, y) {
     y = writeSubheading(doc, titulo, y)
     for (const p of oport) y = writeParagraph(doc, p, y)
   }
-  if (mostrarOportunidade && exemplosOport.length) {
-    const titulo = isF ? TITULOS_FORCA.exemplosPraticos : TITULOS_FO.exemplosOportunidade
-    y = writeSubheading(doc, titulo, y)
-    y = writeBulletList(doc, exemplosOport, y)
-  }
   if (mostrarOportunidade && isF && transformarEmForca.length) {
     y = writeSubheading(doc, TITULOS_FORCA.transformarEmForca, y)
     y = writeBulletList(doc, transformarEmForca, y)
   }
+  if (mostrarOportunidade && exemplosOport.length) {
+    const titulo = isF ? TITULOS_FORCA.exemplosPraticos : TITULOS_FO.exemplosOportunidade
+    y = writeSubheading(doc, titulo, y)
+    y = writeBulletList(doc, exemplosOport, y)
+  }  
   if (mostrarFraqueza && fraquezaOuAmeaca.length) {
     const titulo = isF ? TITULOS_FORCA.fraquezaOuOportunidade : TITULOS_FO.fraquezaOuAmeaca
     y = writeSubheading(doc, titulo, y)
@@ -258,7 +258,7 @@ function renderTracoConteudo(doc, traco, y) {
       for (const p of oQueE) y = writeParagraph(doc, p, y)
     }
 
-    if (isF) y = renderDetalheForca(doc, detalhe, y)
+    if (isF && quadrante === 'forca') y = renderDetalheForca(doc, detalhe, y)
 
     if (isFo || (isF && quadrante !== 'forca')) {
       y = renderDetalheFo(doc, detalhe, quadrante, tipo, y)
