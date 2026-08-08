@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf'
 import { renderTracosNoPdf, TYPE, splitLines, textBlockHeight, ensureSpace, drawLinesLeft, SECOES } from '@/lib/swot-pdf-tracos'
-import capaLogoBase64 from '../../assets/AutSwotCapaPDF.png?inline'
+import capaLogoBase64 from '../assets/AutSwotCapaPDF.png?inline'
 
 const PAGE_W = TYPE.margin * 2 + TYPE.contentWidth
 const { margin: MARGIN, contentWidth: CONTENT_W, sizes: SZ, colors: C, spacing: SP } = TYPE
