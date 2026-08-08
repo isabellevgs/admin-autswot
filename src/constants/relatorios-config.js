@@ -185,7 +185,14 @@ export const CAMPOS_RELATORIO_FORCA = [
     required: false,
     section: SECAO_OPORTUNIDADE,
   },
-  { name: 'exemplos', type: 'bulletList', required: false, group: 'exemplosPraticosForca', section: SECAO_OPORTUNIDADE },  
+  ...CATEGORIAS_EXEMPLOS_OPORTUNIDADE.map(({ name, label }) => ({
+    name,
+    label,
+    type: 'text',
+    required: false,
+    group: 'exemplosOportunidade',
+    section: SECAO_OPORTUNIDADE,
+  })),
   {
     name: 'fraquezaOuAmeaca',
     label: 'Quando esse traço é uma fraqueza e como ele pode ser uma oportunidade de se transformar em força',
