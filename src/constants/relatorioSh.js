@@ -27,7 +27,9 @@ export function montarItensPorCategoria(detalhe, categorias, legacyArray = []) {
     return categorias
       .map(({ field, label }) => {
         const texto = (detalhe[field] ?? '').trim()
-        return texto ? `${label}: ${texto}` : null
+        if (!texto) return null        
+        const labelFormat = label ? `${label}: ` : ''
+        return `${labelFormat}${texto}`
       })
       .filter(Boolean)
   }
