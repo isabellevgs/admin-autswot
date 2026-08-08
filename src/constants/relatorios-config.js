@@ -185,7 +185,7 @@ export const CAMPOS_RELATORIO_FORCA = [
     required: false,
     section: SECAO_OPORTUNIDADE,
   },
-  ....map(({ name, label }) => ({
+  ...CATEGORIAS_EXEMPLOS_PRATICOS_FORCA map(({ name, label }) => ({
     name,
     label,
     type: 'text',
