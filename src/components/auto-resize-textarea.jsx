@@ -12,13 +12,17 @@ function AutoResizeTextarea({
   const adjustHeight = useCallback(() => {
     const el = ref.current
     if (!el) return
+
+    const scrollY = window.scrollY
+    
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
+
+    window.scrollTo({ top: scrollY })
   }, [])
 
   useEffect(() => {
-    adjustHeight()
-    requestAnimationFrame(adjustHeight)
+    adjustHeight()    
   }, [value, adjustHeight])
 
   const handleChange = (e) => {
