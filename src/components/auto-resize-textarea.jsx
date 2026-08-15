@@ -23,6 +23,7 @@ function AutoResizeTextarea({
 
   useEffect(() => {
     adjustHeight()    
+    requestAnimationFrame(adjustHeight)
   }, [value, adjustHeight])
 
   const handleChange = (e) => {
