@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import Posts from './pages/posts';
+import DadosSistema from './pages/dados-sistema';
 import Comunidade from './pages/comunidade';
 import PostDetail from './pages/post-detail';
 import Pessoas from './pages/pessoas';
@@ -78,6 +79,16 @@ function App() {
           <PrivateRoute>
             <AuthenticatedLayout>
               <Relatorios />
+            </AuthenticatedLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/dados-sistema"
+        element={
+          <PrivateRoute>
+            <AuthenticatedLayout>
+              <DadosSistema />
             </AuthenticatedLayout>
           </PrivateRoute>
         }
