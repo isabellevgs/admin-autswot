@@ -13,17 +13,21 @@ function AutoResizeTextarea({
     const el = ref.current
     if (!el) return
 
-    const scrollY = window.scrollY
-    
-    el.style.height = 'auto'
-    el.style.height = `${el.scrollHeight}px`
+    const alturaAnterior = el.offsetHeight
+    const scrollAnterior = window.scrollY
 
-    window.scrollTo({ top: scrollY })
+    el.style.height = 'auto'
+    const novaAltura = el.scrollHeight
+    el.style.height = `${novaAltura}px`
+
+    const diferenca = novaAltura - alturaAnterior
+    if (diferenca !== 0) {
+      window.scrollTo({ top: scrollAnterior })
+    }
   }, [])
 
   useEffect(() => {
-    adjustHeight()    
-    requestAnimationFrame(adjustHeight)
+    adjustHeight()
   }, [value, adjustHeight])
 
   const handleChange = (e) => {
