@@ -258,7 +258,7 @@ function renderTracoConteudo(doc, traco, y) {
       for (const p of oQueE) y = writeParagraph(doc, p, y)
     }
 
-    if (isF && quadrante === 'forca') y = renderDetalheForca(doc, detalhe, y)
+    if (isF) y = renderDetalheForca(doc, detalhe, y)
 
     if (isFo || (isF && quadrante !== 'forca')) {
       y = renderDetalheFo(doc, detalhe, quadrante, tipo, y)
