@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, ChevronDown, LayoutDashboard, Users, FileText, MessageSquare, HelpCircle, BookOpen } from 'lucide-react';
+import { LogOut, ChevronDown, LayoutDashboard, Users, FileText, MessageSquare, HelpCircle, BookOpen, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const NAV_LINKS = [
@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { to: '/relatorios', label: 'Relatórios', icon: BookOpen },
   { to: '/posts',      label: 'Postagens',  icon: FileText },
   { to: '/comunidade', label: 'Comunidade', icon: MessageSquare },
+  { to: '/dados-sistema', label: 'Sistema',      icon: Settings },
 ];
 
 function getInitials(name) {
