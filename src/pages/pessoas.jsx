@@ -14,6 +14,7 @@ function Pessoas() {
   const [searchTerm, setSearchTerm] = useState('')
   const [modalType, setModalType] = useState(null)
   const [selectedPerson, setSelectedPerson] = useState(null)
+  const [gerandoPdf, setGerandoPdf] = useState(false)
   const { pessoas, loading, error, progressMap, sort, handleSort, reload } = usePessoas(searchTerm)
   const handleOpenQuestionario = (person) => { setSelectedPerson(person); setModalType('questionario') }
   const handleOpenDiario = (person) => { setSelectedPerson(person); setModalType('diario') }
@@ -23,26 +24,33 @@ function Pessoas() {
   const handleExcluirUsuario = (person) => { setSelectedPerson(person); setModalType('excluir-usuario') }
   const handleClose = () => { setModalType(null); setSelectedPerson(null) }
 
-  const handleGerarPdfAceite = () => {
-    // ajuste "aceite" para o critério real de quem "deu aceite" (ex: possui profileRegistration preenchido)
-    const pessoasComAceite = pessoas.filter((p) => p.profileRegistration)
-    gerarPessoasAceitePdf(pessoasComAceite)
+  const handleGerarPdfAceite = async () => {
+    setGerandoPdf(true)
+    try {
+      await gerarPessoasAceitePdf(pessoas)
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err)
+    } finally {
+      setGerandoPdf(false)
+    }
   }
 
   return (
     <>
-      <div className="mt-10 flex items-center justify-between">
-        <h1 className="font-bold text-3xl">Pessoas</h1>
+      <h1 className="mt-10 font-bold text-3xl">Pessoas</h1>
+
+      <div className="mt-4 flex items-center gap-3">
+        <div className="flex-1">
+          <Search onSearch={setSearchTerm} placeholder="Buscar por nome ou e-mail..." />
+        </div>
         <button
           onClick={handleGerarPdfAceite}
-          disabled={loading || pessoas.length === 0}
-          className="px-4 py-2 bg-slate-800 text-white rounded-md text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={loading || gerandoPdf || pessoas.length === 0}
+          className="px-4 py-2 bg-slate-800 text-white rounded-md text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
         >
-          Gerar PDF (aceite)
+          {gerandoPdf ? 'Gerando PDF...' : 'Gerar PDF (aceite)'}
         </button>
       </div>
-
-      <Search onSearch={setSearchTerm} placeholder="Buscar por nome ou e-mail..." />
 
       {error && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
