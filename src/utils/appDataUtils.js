@@ -24,3 +24,50 @@ export async function atualizarTcle(tcle) {
     };
   }
 }
+
+export async function buscarBloqueioAcesso() {
+  try {
+    const res = await api.get('/app-data/bloqueio-acesso');
+    return {
+      bloquearAcesso: res.data.bloquearAcesso,
+      dataInicioAcesso: res.data.dataInicioAcesso,
+      dataFimAcesso: res.data.dataFimAcesso,
+      emailsComAcesso: res.data.emailsComAcesso,
+      erro: null,
+    };
+  } catch (err) {
+    return {
+      bloquearAcesso: null,
+      dataInicioAcesso: null,
+      dataFimAcesso: null,
+      emailsComAcesso: null,
+      erro: extrairErroApi(err, 'Erro ao carregar a configuração de bloqueio de acesso.'),
+    };
+  }
+}
+
+export async function atualizarBloqueioAcesso(bloquearAcesso, dataInicioAcesso, dataFimAcesso, emailsComAcesso) {
+  try {
+    const res = await api.put('/app-data/bloqueio-acesso', {
+      bloquearAcesso,
+      dataInicioAcesso: bloquearAcesso ? dataInicioAcesso : null,
+      dataFimAcesso: bloquearAcesso ? dataFimAcesso : null,
+      emailsComAcesso: bloquearAcesso ? emailsComAcesso : [],
+    });
+    return {
+      bloquearAcesso: res.data.bloquearAcesso,
+      dataInicioAcesso: res.data.dataInicioAcesso,
+      dataFimAcesso: res.data.dataFimAcesso,
+      emailsComAcesso: res.data.emailsComAcesso,
+      erro: null,
+    };
+  } catch (err) {
+    return {
+      bloquearAcesso: null,
+      dataInicioAcesso: null,
+      dataFimAcesso: null,
+      emailsComAcesso: null,
+      erro: extrairErroApi(err, 'Erro ao salvar a configuração de bloqueio de acesso.'),
+    };
+  }
+}
