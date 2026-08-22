@@ -24,7 +24,8 @@ function Pessoas() {
   const handleClose = () => { setModalType(null); setSelectedPerson(null) }
 
   const handleGerarPdfAceite = () => {
-    const pessoasComAceite = pessoas.filter((p) => p.aceite)
+    // ajuste "aceite" para o critério real de quem "deu aceite" (ex: possui profileRegistration preenchido)
+    const pessoasComAceite = pessoas.filter((p) => p.profileRegistration)
     gerarPessoasAceitePdf(pessoasComAceite)
   }
 
