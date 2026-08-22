@@ -25,6 +25,30 @@ export async function atualizarTcle(tcle) {
   }
 }
 
+export async function buscarTermoUso() {
+  try {
+    const res = await api.get('/app-data/termoUso');
+    return { tcle: res.data.termoUso, erro: null };
+  } catch (err) {
+    return {
+      tcle: null,
+      erro: extrairErroApi(err, 'Erro ao carregar o termo de uso.'),
+    };
+  }
+}
+
+export async function atualizarTermoUso(termoUso) {
+  try {
+    const res = await api.put('/app-data/termoUso', { termoUso });
+    return { tcle: res.data.termoUso, erro: null };
+  } catch (err) {
+    return {
+      termoUso: null,
+      erro: extrairErroApi(err, 'Erro ao salvar o termo de uso.'),
+    };
+  }
+}
+
 export async function buscarBloqueioAcesso() {
   try {
     const res = await api.get('/app-data/bloqueio-acesso');
