@@ -8,14 +8,13 @@ import ModalRedefinirSenha from '@/components/modal-redefinir-senha'
 import ModalExcluirUsuario from '@/components/modal-excluir-usuario'
 import ModalCadastro from '@/components/modal-cadastro'
 import { usePessoas } from '@/hooks/use-pessoas'
+import { gerarPessoasAceitePdf } from '@/lib/pessoas-pdf'
 
 function Pessoas() {
   const [searchTerm, setSearchTerm] = useState('')
   const [modalType, setModalType] = useState(null)
   const [selectedPerson, setSelectedPerson] = useState(null)
-
   const { pessoas, loading, error, progressMap, sort, handleSort, reload } = usePessoas(searchTerm)
-
   const handleOpenQuestionario = (person) => { setSelectedPerson(person); setModalType('questionario') }
   const handleOpenDiario = (person) => { setSelectedPerson(person); setModalType('diario') }
   const handleOpenReflexoes = (person) => { setSelectedPerson(person); setModalType('reflexoes-traco') }
@@ -24,9 +23,23 @@ function Pessoas() {
   const handleExcluirUsuario = (person) => { setSelectedPerson(person); setModalType('excluir-usuario') }
   const handleClose = () => { setModalType(null); setSelectedPerson(null) }
 
+  const handleGerarPdfAceite = () => {
+    const pessoasComAceite = pessoas.filter((p) => p.aceite)
+    gerarPessoasAceitePdf(pessoasComAceite)
+  }
+
   return (
     <>
-      <h1 className="mt-10 font-bold text-3xl">Pessoas</h1>
+      <div className="mt-10 flex items-center justify-between">
+        <h1 className="font-bold text-3xl">Pessoas</h1>
+        <button
+          onClick={handleGerarPdfAceite}
+          disabled={loading || pessoas.length === 0}
+          className="px-4 py-2 bg-slate-800 text-white rounded-md text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Gerar PDF (aceite)
+        </button>
+      </div>
 
       <Search onSearch={setSearchTerm} placeholder="Buscar por nome ou e-mail..." />
 
