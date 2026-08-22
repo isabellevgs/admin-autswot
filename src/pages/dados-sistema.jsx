@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import AutoResizeTextarea from '@/components/auto-resize-textarea'
 import BulletListField from '@/components/bullet-list-field'
-import { buscarTcle, atualizarTcle, buscarBloqueioAcesso, atualizarBloqueioAcesso } from '@/utils/appDataUtils'
+import { buscarTcle, atualizarTcle, buscarTermoUso, atualizarTermoUso, buscarBloqueioAcesso, atualizarBloqueioAcesso } from '@/utils/appDataUtils'
 
 const inputClass =
   'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-violet-400 bg-white'
 
 function DadosSistema() {
   const [tcle, setTcle] = useState('')
+  const [termoUso, setTermoUso] = useState('')
   const [bloquearAcesso, setBloquearAcesso] = useState(false)
   const [dataInicioAcesso, setDataInicioAcesso] = useState('')
   const [dataFimAcesso, setDataFimAcesso] = useState('')
@@ -24,16 +25,18 @@ function DadosSistema() {
   const carregar = async () => {
     setLoading(true)
     setError(null)
-    const [{ tcle, erro: erroTcle }, bloqueio] = await Promise.all([
+    const [{ tcle, erro: erroTcle }, { termoUso, erro: erroTermoUso }, bloqueio] = await Promise.all([
       buscarTcle(),
+      buscarTermoUso(),
       buscarBloqueioAcesso(),
     ])
-    setTcle(tcle ?? '')
+    setTcle(tcle ?? '')    
+    setTermoUso(termoUso ?? '')
     setBloquearAcesso(!!bloqueio.bloquearAcesso)
     setDataInicioAcesso(bloqueio.dataInicioAcesso ?? '')
     setDataFimAcesso(bloqueio.dataFimAcesso ?? '')
     setEmailsComAcesso(bloqueio.emailsComAcesso?.length ? bloqueio.emailsComAcesso : [''])
-    setError(erroTcle ?? bloqueio.erro)
+    setError(erroTcle ?? erroTermoUso ?? bloqueio.erro)
     setLoading(false)
   }
 
@@ -44,12 +47,13 @@ function DadosSistema() {
 
     const emails = emailsComAcesso.map((e) => e.trim()).filter(Boolean)
 
-    const [tcleResult, bloqueioResult] = await Promise.all([
+    const [tcleResult, termoUsoResult, bloqueioResult] = await Promise.all([
       atualizarTcle(tcle),
+      atualizarTermoUso(termoUso),
       atualizarBloqueioAcesso(bloquearAcesso, dataInicioAcesso, dataFimAcesso, emails),
     ])
 
-    const erro = tcleResult.erro ?? bloqueioResult.erro
+    const erro = tcleResult.erro ?? termoUsoResult.erro ?? bloqueioResult.erro
     if (erro) {
       setError(erro)
     } else {
@@ -81,6 +85,19 @@ function DadosSistema() {
               onChange={(e) => setTcle(e.target.value)}
               minRows={12}
               placeholder="Escreva o texto do termo aqui…"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="termo-uso" className="block text-sm font-semibold text-slate-700 mb-2">
+              Termo de Uso
+            </label>
+            <AutoResizeTextarea
+              id="termo-uso"
+              value={termoUso}
+              onChange={(e) => setTermoUso(e.target.value)}
+              minRows={12}
+              placeholder="Escreva o texto do termo de uso aqui…"
             />
           </div>
 
