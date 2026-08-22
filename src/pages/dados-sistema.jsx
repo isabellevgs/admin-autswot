@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react'
 import AutoResizeTextarea from '@/components/auto-resize-textarea'
-import { buscarTcle, atualizarTcle } from '@/utils/appDataUtils'
+import BulletListField from '@/components/bullet-list-field'
+import { buscarTcle, atualizarTcle, buscarBloqueioAcesso, atualizarBloqueioAcesso } from '@/utils/appDataUtils'
+
+const inputClass =
+  'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-violet-400 bg-white'
 
 function DadosSistema() {
   const [tcle, setTcle] = useState('')
+  const [bloquearAcesso, setBloquearAcesso] = useState(false)
+  const [dataInicioAcesso, setDataInicioAcesso] = useState('')
+  const [dataFimAcesso, setDataFimAcesso] = useState('')
+  const [emailsComAcesso, setEmailsComAcesso] = useState([''])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [salvando, setSalvando] = useState(false)
@@ -16,9 +24,16 @@ function DadosSistema() {
   const carregar = async () => {
     setLoading(true)
     setError(null)
-    const { tcle, erro } = await buscarTcle()
+    const [{ tcle, erro: erroTcle }, bloqueio] = await Promise.all([
+      buscarTcle(),
+      buscarBloqueioAcesso(),
+    ])
     setTcle(tcle ?? '')
-    setError(erro)
+    setBloquearAcesso(!!bloqueio.bloquearAcesso)
+    setDataInicioAcesso(bloqueio.dataInicioAcesso ?? '')
+    setDataFimAcesso(bloqueio.dataFimAcesso ?? '')
+    setEmailsComAcesso(bloqueio.emailsComAcesso?.length ? bloqueio.emailsComAcesso : [''])
+    setError(erroTcle ?? bloqueio.erro)
     setLoading(false)
   }
 
@@ -26,7 +41,15 @@ function DadosSistema() {
     setSalvando(true)
     setError(null)
     setSalvo(false)
-    const { erro } = await atualizarTcle(tcle)
+
+    const emails = emailsComAcesso.map((e) => e.trim()).filter(Boolean)
+
+    const [tcleResult, bloqueioResult] = await Promise.all([
+      atualizarTcle(tcle),
+      atualizarBloqueioAcesso(bloquearAcesso, dataInicioAcesso, dataFimAcesso, emails),
+    ])
+
+    const erro = tcleResult.erro ?? bloqueioResult.erro
     if (erro) {
       setError(erro)
     } else {
@@ -39,13 +62,11 @@ function DadosSistema() {
   return (
     <>
       <h1 className="mt-10 font-bold text-3xl">Dados do sistema</h1>
-
       {error && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
           {error}
         </div>
       )}
-
       {loading ? (
         <div className="mt-8 text-center text-slate-500 py-8">Carregando...</div>
       ) : (
@@ -63,10 +84,56 @@ function DadosSistema() {
             />
           </div>
 
+          <div className="pt-2 border-t border-slate-100">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={bloquearAcesso}
+                onChange={(e) => setBloquearAcesso(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-400"
+              />
+              Bloquear acesso
+            </label>
+
+            {bloquearAcesso && (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-violet-200 bg-violet-50/40">
+                <div>
+                  <label htmlFor="data-inicio-acesso" className="block text-sm font-medium text-slate-700 mb-1">
+                    Data de início do acesso
+                  </label>
+                  <input
+                    id="data-inicio-acesso"
+                    type="date"
+                    value={dataInicioAcesso}
+                    onChange={(e) => setDataInicioAcesso(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="data-fim-acesso" className="block text-sm font-medium text-slate-700 mb-1">
+                    Data de fim do acesso
+                  </label>
+                  <input
+                    id="data-fim-acesso"
+                    type="date"
+                    value={dataFimAcesso}
+                    onChange={(e) => setDataFimAcesso(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Emails com acesso
+                  </label>
+                  <BulletListField value={emailsComAcesso} onChange={setEmailsComAcesso} />
+                </div>
+              </div>
+            )}
+          </div>
+
           {salvo && (
             <p className="text-sm text-green-600 font-medium">Salvo com sucesso!</p>
           )}
-
           <div className="flex justify-end">
             <button
               onClick={handleSalvar}
