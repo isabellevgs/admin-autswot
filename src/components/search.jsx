@@ -1,20 +1,17 @@
 import { useState } from 'react'
 import { Search as SearchIcon } from 'lucide-react'
 
-function Search({ onSearch, placeholder = 'Buscar...' }) {
+function Search({ onSearch, placeholder = 'Buscar...', children }) {
   const [searchTerm, setSearchTerm] = useState('')
-
   const handleChange = (e) => {
     const value = e.target.value
     setSearchTerm(value)
     onSearch?.(value)
   }
-
   const handleSubmit = (e) => {
     e.preventDefault()
     onSearch?.(searchTerm)
   }
-
   return (
     <form onSubmit={handleSubmit} className="mt-6 flex items-center gap-3 w-full">
       <input
@@ -32,9 +29,9 @@ function Search({ onSearch, placeholder = 'Buscar...' }) {
         <SearchIcon className="w-5 h-5" />
         <p className="font-bold">Buscar</p>
       </button>
+      {children}
     </form>
   )
 }
 
 export default Search
-
