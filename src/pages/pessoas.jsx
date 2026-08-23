@@ -39,18 +39,16 @@ function Pessoas() {
     <>
       <h1 className="mt-10 font-bold text-3xl">Pessoas</h1>
 
-      <div className="mt-4 flex items-center gap-3">
-        <div className="flex-1">
-          <Search onSearch={setSearchTerm} placeholder="Buscar por nome ou e-mail..." />
-        </div>
+      <Search onSearch={setSearchTerm} placeholder="Buscar por nome ou e-mail...">
         <button
+          type="button"
           onClick={handleGerarPdfAceite}
           disabled={loading || gerandoPdf || pessoas.length === 0}
-          className="px-4 py-2 bg-slate-800 text-white rounded-md text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          className="inline-flex items-center px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition font-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
         >
           {gerandoPdf ? 'Gerando PDF...' : 'Gerar PDF (aceite)'}
         </button>
-      </div>
+      </Search>
 
       {error && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
