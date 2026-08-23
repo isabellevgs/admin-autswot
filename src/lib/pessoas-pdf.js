@@ -50,7 +50,7 @@ export async function gerarPessoasAceitePdf(pessoas) {
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(SZ.docTitle)
   doc.setFont('helvetica', 'bold')
-  doc.text('Pessoas com Aceite', MARGIN, 15)
+  doc.text('Relatório de aceites de TCLE e termo de uso', MARGIN, 15)
   doc.setFontSize(SZ.docSubtitle)
   doc.setFont('helvetica', 'normal')
   doc.text(`Total: ${pessoasComAceite.length}`, MARGIN, 24)
@@ -83,8 +83,8 @@ export async function gerarPessoasAceitePdf(pessoas) {
 
     doc.setFont('helvetica', 'normal')
     doc.text(`Data do aceite: ${dataAceite}`, MARGIN + 2, y + 12)
-    doc.text(`Diagnóstico formal de TEA: ${diagnosticoTea}`, MARGIN + 2, y + 18)
-    doc.text(`Profissional que indicou: ${profissionalIndicou}`, MARGIN + 2, y + 24)
+    doc.text(`Manifestou que tem diagnóstico formal de Transtorno do Espectro Autista: ${diagnosticoTea}`, MARGIN + 2, y + 18)
+    doc.text(`Profissional especializado que indicou: ${profissionalIndicou}`, MARGIN + 2, y + 24)
 
     y += linhaH + 4
   })
