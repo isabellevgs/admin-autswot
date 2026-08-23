@@ -46,7 +46,7 @@ function Pessoas() {
           disabled={loading || gerandoPdf || pessoas.length === 0}
           className="inline-flex items-center px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition font-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
         >
-          {gerandoPdf ? 'Gerando PDF...' : 'Gerar PDF (aceite)'}
+          {gerandoPdf ? 'Gerando PDF...' : 'PDF de aceites de termo'}
         </button>
       </Search>
 
