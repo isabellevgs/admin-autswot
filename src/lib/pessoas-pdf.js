@@ -64,8 +64,7 @@ export async function gerarPessoasAceitePdf(pessoas) {
   pessoasComAceite.forEach((p, i) => {
     const reg = registrationMap[p.id] ?? {}
     const dataAceite = formatData(p.createdAt)
-    const diagnosticoTea = formatDiagnostico(reg.diagnosticadoTea)
-    const profissionalIndicou = reg.especialistaIndicacao || '-'
+    const diagnosticoTea = formatDiagnostico(reg.diagnosticadoTea)    
 
     const linhaH = 24
     if (y + linhaH > 270) {
@@ -83,8 +82,7 @@ export async function gerarPessoasAceitePdf(pessoas) {
 
     doc.setFont('helvetica', 'normal')
     doc.text(`Data do aceite: ${dataAceite}`, MARGIN + 2, y + 12)
-    doc.text(`Manifestou que tem diagnóstico formal de Transtorno do Espectro Autista: ${diagnosticoTea}`, MARGIN + 2, y + 18)
-    doc.text(`Profissional especializado que indicou: ${profissionalIndicou}`, MARGIN + 2, y + 24)
+    doc.text(`Manifestou que tem diagnóstico formal de Transtorno do Espectro Autista: ${diagnosticoTea}`, MARGIN + 2, y + 18)    
 
     y += linhaH + 4
   })
