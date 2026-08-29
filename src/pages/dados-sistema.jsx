@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react'
 import AutoResizeTextarea from '@/components/auto-resize-textarea'
 import BulletListField from '@/components/bullet-list-field'
-import { buscarTcle, atualizarTcle, buscarTermoUso, atualizarTermoUso, buscarBloqueioAcesso, atualizarBloqueioAcesso } from '@/utils/appDataUtils'
+import { 
+  buscarTcle, 
+  atualizarTcle, 
+  buscarTermoUso,
+  atualizarTermoUso,
+  buscarBloqueioAcesso,
+  atualizarBloqueioAcesso,
+  buscarUsuarioPorEmail 
+} from '@/utils/appDataUtils'
 
 const inputClass =
   'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-violet-400 bg-white'
@@ -13,6 +21,7 @@ function DadosSistema() {
   const [dataInicioAcesso, setDataInicioAcesso] = useState('')
   const [dataFimAcesso, setDataFimAcesso] = useState('')
   const [emailsComAcesso, setEmailsComAcesso] = useState([''])
+  const [infoPorEmail, setInfoPorEmail] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [salvando, setSalvando] = useState(false)
@@ -21,6 +30,27 @@ function DadosSistema() {
   useEffect(() => {
     carregar()
   }, [])
+
+  useEffect(() => {
+    const emailsParaBuscar = emailsComAcesso
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e && e.includes('@') && !(e in infoPorEmail))
+  
+    if (emailsParaBuscar.length === 0) return
+  
+    const timeout = setTimeout(() => {
+      emailsParaBuscar.forEach(async (email) => {
+        setInfoPorEmail((prev) => ({ ...prev, [email]: { carregando: true } }))
+        const { usuario, erro } = await buscarUsuarioPorEmail(email)
+        setInfoPorEmail((prev) => ({
+          ...prev,
+          [email]: { nome: usuario?.nome, dataCadastro: usuario?.dataCadastro, carregando: false, erro },
+        }))
+      })
+    }, 600)
+  
+    return () => clearTimeout(timeout)
+  }, [emailsComAcesso, infoPorEmail])
 
   const carregar = async () => {
     setLoading(true)
@@ -142,7 +172,21 @@ function DadosSistema() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Emails com acesso
                   </label>
-                  <BulletListField value={emailsComAcesso} onChange={setEmailsComAcesso} />
+                  <BulletListField
+                    value={emailsComAcesso}
+                    onChange={setEmailsComAcesso}
+                    placeholder="email@exemplo.com"
+                    renderExtra={(email) => {
+                      const emailNormalizado = email.trim().toLowerCase()
+                      const info = infoPorEmail[emailNormalizado]
+                      if (!info?.nome) return null
+                      return (
+                        <span className="text-xs text-slate-500">
+                          {info.nome} · cadastrado em {new Date(info.dataCadastro).toLocaleDateString('pt-BR')}
+                        </span>
+                      )
+                    }}
+                  />
                 </div>
               </div>
             )}
