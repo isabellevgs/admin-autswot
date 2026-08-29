@@ -178,13 +178,20 @@ function DadosSistema() {
                     placeholder="email@exemplo.com"
                     renderExtra={(email) => {
                       const emailNormalizado = email.trim().toLowerCase()
+                      if (!emailNormalizado || !emailNormalizado.includes('@')) return null
                       const info = infoPorEmail[emailNormalizado]
-                      if (!info?.nome) return null
-                      return (
-                        <span className="text-xs text-slate-500">
-                          {info.nome} · cadastrado em {new Date(info.dataCadastro).toLocaleDateString('pt-BR')}
-                        </span>
-                      )
+                      if (!info || info.carregando) return null
+                      if (info.erro) {
+                        return <span className="text-xs text-red-500">{info.erro}</span>
+                      }
+                      if (info.nome) {
+                        return (
+                          <span className="text-xs text-slate-500">
+                            {info.nome} · cadastrado em {new Date(info.dataCadastro).toLocaleDateString('pt-BR')}
+                          </span>
+                        )
+                      }
+                      return <span className="text-xs text-amber-600">Usuário não encontrado</span>
                     }}
                   />
                 </div>
