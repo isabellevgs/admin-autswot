@@ -182,7 +182,7 @@ function DadosSistema() {
                       const info = infoPorEmail[emailNormalizado]
                       if (!info || info.carregando) return null
                       if (info.erro) {
-                        return <span className="text-xs text-red-500">{info.erro}</span>
+                        return <span className="text-xs text-slate-400 italic">{info.erro}</span>
                       }
                       if (info.nome) {
                         return (
@@ -191,7 +191,7 @@ function DadosSistema() {
                           </span>
                         )
                       }
-                      return <span className="text-xs text-amber-600">Usuário não encontrado</span>
+                      return <span className="text-xs text-slate-400 italic">Usuário não encontrado</span>
                     }}
                   />
                 </div>
