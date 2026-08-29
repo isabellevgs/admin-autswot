@@ -1,15 +1,12 @@
 import { Plus, X } from 'lucide-react'
 import AutoResizeTextarea from '@/components/auto-resize-textarea'
 
-function BulletListField({ value, onChange, placeholder = 'Digite o texto do item...' }) {
+function BulletListField({ value, onChange, placeholder = 'Digite o texto do item...', renderExtra }) {
   const items = Array.isArray(value) && value.length > 0 ? value : ['']
-
   const updateItem = (idx, text) => {
     onChange(items.map((item, i) => (i === idx ? text : item)))
   }
-
   const addItem = () => onChange([...items, ''])
-
   const removeItem = (idx) => {
     if (items.length === 1) {
       onChange([''])
@@ -17,7 +14,6 @@ function BulletListField({ value, onChange, placeholder = 'Digite o texto do ite
     }
     onChange(items.filter((_, i) => i !== idx))
   }
-
   return (
     <div className="space-y-2">
       {items.map((item, idx) => (
@@ -30,6 +26,7 @@ function BulletListField({ value, onChange, placeholder = 'Digite o texto do ite
               placeholder={placeholder}
               minRows={1}
             />
+            {renderExtra && <div className="mt-1">{renderExtra(item, idx)}</div>}
           </div>
           <button
             type="button"
@@ -52,5 +49,4 @@ function BulletListField({ value, onChange, placeholder = 'Digite o texto do ite
     </div>
   )
 }
-
 export default BulletListField
