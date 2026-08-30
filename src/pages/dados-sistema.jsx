@@ -8,7 +8,7 @@ import {
   atualizarTermoUso,
   buscarBloqueioAcesso,
   atualizarBloqueioAcesso,
-  buscarUsuarioPorEmail 
+  buscarUsuariosPorEmails  
 } from '@/utils/appDataUtils'
 
 const inputClass =
@@ -38,14 +38,28 @@ function DadosSistema() {
   
     if (emailsParaBuscar.length === 0) return
   
-    const timeout = setTimeout(() => {
-      emailsParaBuscar.forEach(async (email) => {
-        setInfoPorEmail((prev) => ({ ...prev, [email]: { carregando: true } }))
-        const { usuario, erro } = await buscarUsuarioPorEmail(email)
-        setInfoPorEmail((prev) => ({
-          ...prev,
-          [email]: { nome: usuario?.nome, dataCadastro: usuario?.dataCadastro, carregando: false, erro },
-        }))
+    const timeout = setTimeout(async () => {
+      setInfoPorEmail((prev) => {
+        const marcado = { ...prev }
+        emailsParaBuscar.forEach((email) => { marcado[email] = { carregando: true } })
+        return marcado
+      })
+  
+      const { usuarios, erro } = await buscarUsuariosPorEmails(emailsParaBuscar)
+  
+      setInfoPorEmail((prev) => {
+        const atualizado = { ...prev }
+        emailsParaBuscar.forEach((email) => {
+          if (erro) {
+            atualizado[email] = { carregando: false, erro }
+            return
+          }
+          const dados = usuarios?.[email]
+          atualizado[email] = dados
+            ? { nome: dados.name, dataCadastro: dados.createdAt, carregando: false, erro: null }
+            : { carregando: false, erro: null } // não encontrado, sem erro de rede
+        })
+        return atualizado
       })
     }, 600)
   
