@@ -96,21 +96,14 @@ export async function atualizarBloqueioAcesso(bloquearAcesso, dataInicioAcesso, 
   }
 }
 
-export async function buscarUsuarioPorEmail(email) {
+export async function buscarUsuariosPorEmails(emails) {
   try {
-    const res = await api.get('/users/by-email', { params: { email } });
-    const user = res.data.user;
-    return {
-      usuario: user ? { nome: user.name, dataCadastro: user.createdAt } : null,
-      erro: null,
-    };
+    const res = await api.post('/users/by-emails', { emails });
+    return { usuarios: res.data.usuarios, erro: null };
   } catch (err) {
-    if (err.response?.status === 404) {
-      return { usuario: null, erro: null };
-    }
     return {
-      usuario: null,
-      erro: extrairErroApi(err, 'Erro ao buscar usuário.'),
+      usuarios: null,
+      erro: extrairErroApi(err, 'Erro ao buscar usuários.'),
     };
   }
 }
