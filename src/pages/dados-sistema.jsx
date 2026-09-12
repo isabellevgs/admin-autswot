@@ -127,7 +127,7 @@ function DadosSistema() {
     setDataFimAcesso(bloqueio.dataFimAcesso ?? '')
     setEmailsComAcesso(bloqueio.emailsComAcesso?.length ? bloqueio.emailsComAcesso : [''])
     setBloquearSwot(!!bloqueioSwot.bloquearSwot)
-    setEmailsBloqueadosSwot(bloqueioSwot.emails?.length ? bloqueioSwot.emails : [''])
+    setEmailsBloqueadosSwot(bloqueioSwot.emailsBloqueadosSwot?.length ? bloqueioSwot.emailsBloqueadosSwot : [''])
     setError(erroTcle ?? erroTermoUso ?? bloqueio.erro ?? bloqueioSwot.erro)
     setLoading(false)
   }
