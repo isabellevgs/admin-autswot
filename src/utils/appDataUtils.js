@@ -107,3 +107,40 @@ export async function buscarUsuariosPorEmails(emails) {
     };
   }
 }
+
+export async function buscarBloqueioSwot() {
+  try {
+    const res = await api.get('/app-data/bloqueio-swot');
+    return {
+      bloquearSwot: res.data.bloquearSwot,
+      emailsBloqueadosSwot: res.data.emailsBloqueadosSwot,
+      erro: null,
+    };
+  } catch (err) {
+    return {
+      bloquearSwot: null,
+      emailsBloqueadosSwot: null,
+      erro: extrairErroApi(err, 'Erro ao carregar a configuração de bloqueio de SWOT.'),
+    };
+  }
+}
+
+export async function atualizarBloqueioSwot(bloquearSwot, emailsBloqueadosSwot) {
+  try {
+    const res = await api.put('/app-data/bloqueio-swot', {
+      bloquearSwot,
+      emailsBloqueadosSwot: bloquearSwot ? emailsBloqueadosSwot : [],
+    });
+    return {
+      bloquearSwot: res.data.bloquearSwot,
+      emailsBloqueadosSwot: res.data.emailsBloqueadosSwot,
+      erro: null,
+    };
+  } catch (err) {
+    return {
+      bloquearSwot: null,
+      emailsBloqueadosSwot: null,
+      erro: extrairErroApi(err, 'Erro ao salvar a configuração de bloqueio de SWOT.'),
+    };
+  }
+}
