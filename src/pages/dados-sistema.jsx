@@ -8,6 +8,8 @@ import {
   atualizarTermoUso,
   buscarBloqueioAcesso,
   atualizarBloqueioAcesso,
+  buscarBloqueioSwot,   
+  atualizarBloqueioSwot,
   buscarUsuariosPorEmails  
 } from '@/utils/appDataUtils'
 
@@ -22,6 +24,9 @@ function DadosSistema() {
   const [dataFimAcesso, setDataFimAcesso] = useState('')
   const [emailsComAcesso, setEmailsComAcesso] = useState([''])
   const [infoPorEmail, setInfoPorEmail] = useState({})
+  const [bloquearSwot, setBloquearSwot] = useState(false)
+  const [emailsBloqueadosSwot, setEmailsBloqueadosSwot] = useState([''])
+  const [infoPorEmailSwot, setInfoPorEmailSwot] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [salvando, setSalvando] = useState(false)
@@ -66,13 +71,54 @@ function DadosSistema() {
     return () => clearTimeout(timeout)
   }, [emailsComAcesso, infoPorEmail])
 
+  useEffect(() => {
+    const emailsParaBuscar = emailsBloqueadosSwot
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e && e.includes('@') && !(e in infoPorEmailSwot))
+
+    if (emailsParaBuscar.length === 0) return
+
+    const timeout = setTimeout(async () => {
+      setInfoPorEmailSwot((prev) => {
+        const marcado = { ...prev }
+        emailsParaBuscar.forEach((email) => { marcado[email] = { carregando: true } })
+        return marcado
+      })
+
+      const { usuarios, erro } = await buscarUsuariosPorEmails(emailsParaBuscar)
+
+      setInfoPorEmailSwot((prev) => {
+        const atualizado = { ...prev }
+        emailsParaBuscar.forEach((email) => {
+          if (erro) {
+            atualizado[email] = { carregando: false, erro }
+            return
+          }
+          const dados = usuarios?.[email]
+          atualizado[email] = dados
+            ? { nome: dados.name, dataCadastro: dados.createdAt, carregando: false, erro: null }
+            : { carregando: false, erro: null }
+        })
+        return atualizado
+      })
+    }, 600)
+
+    return () => clearTimeout(timeout)
+  }, [emailsBloqueadosSwot, infoPorEmailSwot])
+  
   const carregar = async () => {
     setLoading(true)
     setError(null)
-    const [{ tcle, erro: erroTcle }, { termoUso, erro: erroTermoUso }, bloqueio] = await Promise.all([
+    const [
+      { tcle, erro: erroTcle }, 
+      { termoUso, erro: erroTermoUso }, 
+      bloqueio,
+      bloqueioSwot,
+    ] = await Promise.all([
       buscarTcle(),
       buscarTermoUso(),
       buscarBloqueioAcesso(),
+      buscarBloqueioSwot(),
     ])
     setTcle(tcle ?? '')    
     setTermoUso(termoUso ?? '')
@@ -80,7 +126,9 @@ function DadosSistema() {
     setDataInicioAcesso(bloqueio.dataInicioAcesso ?? '')
     setDataFimAcesso(bloqueio.dataFimAcesso ?? '')
     setEmailsComAcesso(bloqueio.emailsComAcesso?.length ? bloqueio.emailsComAcesso : [''])
-    setError(erroTcle ?? erroTermoUso ?? bloqueio.erro)
+    setBloquearSwot(!!bloqueioSwot.bloquearSwot)
+    setEmailsBloqueadosSwot(bloqueioSwot.emails?.length ? bloqueioSwot.emails : [''])
+    setError(erroTcle ?? erroTermoUso ?? bloqueio.erro ?? bloqueioSwot.erro)
     setLoading(false)
   }
 
@@ -90,14 +138,21 @@ function DadosSistema() {
     setSalvo(false)
 
     const emails = emailsComAcesso.map((e) => e.trim()).filter(Boolean)
+    const emailsSwot = emailsBloqueadosSwot.map((e) => e.trim()).filter(Boolean)
 
-    const [tcleResult, termoUsoResult, bloqueioResult] = await Promise.all([
+    const [
+      tcleResult,
+      termoUsoResult,
+      bloqueioResult,
+      bloqueioSwotResult
+    ] = await Promise.all([
       atualizarTcle(tcle),
       atualizarTermoUso(termoUso),
       atualizarBloqueioAcesso(bloquearAcesso, dataInicioAcesso, dataFimAcesso, emails),
+      atualizarBloqueioSwot(bloquearSwot, emailsSwot),
     ])
 
-    const erro = tcleResult.erro ?? termoUsoResult.erro ?? bloqueioResult.erro
+    const erro = tcleResult.erro ?? termoUsoResult.erro ?? bloqueioResult.erro ?? bloqueioSwotResult.erro
     if (erro) {
       setError(erro)
     } else {
@@ -209,6 +264,48 @@ function DadosSistema() {
                     }}
                   />
                 </div>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-slate-100">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={bloquearSwot}
+                onChange={(e) => setBloquearSwot(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-400"
+              />
+              Bloquear SWOT para usuários específicos
+            </label>
+
+            {bloquearSwot && (
+              <div className="mt-4 p-4 rounded-xl border border-red-200 bg-red-50/40">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Emails bloqueados
+                </label>
+                <BulletListField
+                  value={emailsBloqueadosSwot}
+                  onChange={setEmailsBloqueadosSwot}
+                  placeholder="email@exemplo.com"
+                  renderExtra={(email) => {
+                    const emailNormalizado = email.trim().toLowerCase()
+                    if (!emailNormalizado || !emailNormalizado.includes('@')) return null
+                    const info = infoPorEmailSwot[emailNormalizado]
+                    if (!info || info.carregando) return null
+                    if (info.erro) {
+                      return <span className="text-xs text-red-300">{info.erro}</span>
+                    }
+                    if (info.nome) {
+                      return (
+                        <span className="text-xs text-slate-500">
+                          {info.nome} · cadastrado em {new Date(info.dataCadastro).toLocaleDateString('pt-BR')}
+                        </span>
+                      )
+                    }
+                    return <span className="text-xs text-amber-400">Usuário não encontrado</span>
+                  }}
+                />
               </div>
             )}
           </div>
